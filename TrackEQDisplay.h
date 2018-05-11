@@ -7,13 +7,13 @@ typedef struct TrackEQDisplay {
   MP3Display                super;
 
   void        (*init)                   (struct TrackEQDisplay *this);
-  void        (*setTrackInfo)           (struct TrackEQDisplay *this, int8_t *trackName, int8_t *artistName, int8_t *albumName, uint32_t length);
+  void        (*setTrackInfo)           (struct TrackEQDisplay *this, char *trackName, char *artistName, char *albumName, uint32_t length);
   void        (*changeVolume)           (struct TrackEQDisplay *this, uint8_t volume);
   void        (*changeMode)             (struct TrackEQDisplay *this, uint8_t mode);
   void        (*changeStatus)           (struct TrackEQDisplay *this, uint8_t status);
 
   uint8_t                   volume, mode, status, *bufLength;
-  int8_t                    *trackName, *artistName, *albumName;
+  char                      *trackName, *artistName, *albumName;
   uint32_t                  length;
 } TrackEQDisplay;
 

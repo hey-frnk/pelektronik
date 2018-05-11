@@ -13,7 +13,7 @@ void TrackEQDisplay_show(void *this) {
   printf("TrackEQDisplay: Show Method of TrackEQDisplay Called!\n");
 }
 
-void TrackEQDisplay_setTrackInfo(TrackEQDisplay *this, int8_t *trackName, int8_t *artistName, int8_t *albumName, uint32_t length){
+void TrackEQDisplay_setTrackInfo(TrackEQDisplay *this, char *trackName, char *artistName, char *albumName, uint32_t length){
   this->trackName = trackName;
   this->artistName = artistName;
   this->albumName = albumName;

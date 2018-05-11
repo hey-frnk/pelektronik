@@ -13,7 +13,7 @@ void TrackDisplay_show(void *this) {
   printf("TrackDisplay: Show Method of MP3Display Called! Volume: %hhu\n", ((TrackDisplay *) this)->volume);
 }
 
-void TrackDisplay_setTrackInfo(TrackDisplay *this, int8_t *trackName, int8_t *artistName, int8_t *albumName, uint32_t length){
+void TrackDisplay_setTrackInfo(TrackDisplay *this, char *trackName, char *artistName, char *albumName, uint32_t length){
   this->trackName = trackName;
   this->artistName = artistName;
   this->albumName = albumName;

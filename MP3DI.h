@@ -1,9 +1,12 @@
 // MP3 Data Interface functions
 
+#ifndef MP3DI_H
+#define MP3DI_H
+
 typedef struct Track{
   char* trackName;
   char* artistName;
-  char* albumname;
+  char* albumName;
   uint32_t length;
 } Track;
 
@@ -39,3 +42,6 @@ uint8_t MP3DI_skipForward(void);
 // Skip Forward
 // Should return 0 if successful
 uint8_t MP3DI_skipBackward(void);
+
+
+#endif
