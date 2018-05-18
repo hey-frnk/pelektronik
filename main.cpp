@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "MP3Display.h"
-#include "TrackDisplay.h"
-#include "TrackEQDisplay.h"
-#include "MP3Display_routines.h"
+#include "MP3Display.hpp"
+#include "TrackDisplay.hpp"
+#include "MP3Display_routines.hpp"
+
+// find . -name .DS_Store -print0 | xargs -0 git rm -f --ignore-unmatch
+
 
 #define ever (;;)
 

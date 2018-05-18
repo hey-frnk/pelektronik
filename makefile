@@ -1,2 +1,2 @@
-main: MP3Display.c TrackDisplay.c TrackEQDisplay.c MP3Display_routines.c main.c
-	gcc MP3Display.c TrackDisplay.c TrackEQDisplay.c MP3Display_routines.c main.c -std=c11 -Wall -o main
+main: MP3Display.cpp TrackDisplay.cpp MP3Display_routines.cpp main.cpp
+	g++ MP3Display.cpp TrackDisplay.cpp MP3Display_routines.cpp main.cpp -std=c++11 -Wall -o main

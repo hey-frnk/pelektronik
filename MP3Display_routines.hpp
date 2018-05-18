@@ -26,7 +26,6 @@ extern MP3Display* INSTANCE_Active;
 
 // Possible allocated instances
 extern TrackDisplay* INSTANCE_TrackDISPLAY;
-extern TrackEQDisplay* INSTANCE_TrackEQDISPLAY;
 
 // Current state variable
 extern MP3Display_State mp3display_state;

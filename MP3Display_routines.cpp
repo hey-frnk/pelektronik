@@ -1,18 +1,16 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "MP3Display.h"
+#include "MP3Display.hpp"
 #include "MP3DI.h"
-#include "TrackDisplay.h"
-#include "TrackEQDisplay.h"
-#include "MP3Display_routines.h"
+#include "TrackDisplay.hpp"
+#include "MP3Display_routines.hpp"
 
 // Active Instance
 MP3Display* INSTANCE_Active = NULL;
 
 // Possible allocated instances
 TrackDisplay* INSTANCE_TrackDISPLAY = NULL;
-TrackEQDisplay* INSTANCE_TrackEQDISPLAY = NULL;
 
 // Current state variable
 MP3Display_State mp3display_state = MP3DISPLAYSTATE_BOOT;
@@ -26,7 +24,7 @@ void (* MP3DisplayState_Routine[])(void) = { _routine_BOOT,        // Correspond
 Track* currentTrack = NULL;
 
 void _routine_BOOT(void){
-  currentTrack = malloc(sizeof(Track));
+  currentTrack = (Track *)malloc(sizeof(Track));
   static char trackName[] = "Technicolour Beat";
   static char artistName[] = "Oh Wonder";
   static char albumName[] = "Oh Wonder";
@@ -43,26 +41,23 @@ void _routine_BOOT(void){
 
 void _routine_PLAY(void){
   // Check for Instance availability
-  if((INSTANCE_TrackDISPLAY == NULL) && (INSTANCE_TrackEQDISPLAY == NULL)){
+  if(INSTANCE_TrackDISPLAY == NULL){
     // Instance being called for the first time, create standard track display instance
-    INSTANCE_TrackDISPLAY = malloc(sizeof(TrackDisplay));
-    TrackDisplay_init(INSTANCE_TrackDISPLAY);
+    INSTANCE_TrackDISPLAY = new TrackDisplay();
 
     // Set active instance
-    INSTANCE_Active = (MP3Display *)INSTANCE_TrackDISPLAY;
+    INSTANCE_Active = INSTANCE_TrackDISPLAY;
 
     // Set track information
     if(currentTrack == NULL) return;  // Oh something went wrong
-    INSTANCE_TrackDISPLAY->setTrackInfo(INSTANCE_TrackDISPLAY, currentTrack->trackName, currentTrack->artistName, currentTrack->albumName, currentTrack->length);
-    INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
+    INSTANCE_TrackDISPLAY->setTrackInfo(currentTrack->trackName, currentTrack->artistName, currentTrack->albumName, currentTrack->length);
+    INSTANCE_TrackDISPLAY->show();
   }
 
   // Display is active
   if(INSTANCE_TrackDISPLAY != NULL){
     printf("Track Display On.");
-    INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
-  } else if(INSTANCE_TrackEQDISPLAY != NULL){
-
+    INSTANCE_TrackDISPLAY->show();
   }
 
 }
