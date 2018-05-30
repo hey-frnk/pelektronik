@@ -56,7 +56,7 @@ void _routine_PLAY(void){
 
   // Display is active
   if(INSTANCE_TrackDISPLAY != NULL){
-    printf("Track Display On.");
+    printf("Track Display On. ");
     INSTANCE_TrackDISPLAY->show();
   }
 
