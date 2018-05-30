@@ -2,7 +2,7 @@
  * font5x7.h
  *
  *  Created on: 30.05.2018
- *      Author: HARDWARECOP
+ *      Author: Frank Zheng
  */
 
 #ifndef FONT5X7_H_
