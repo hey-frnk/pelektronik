@@ -18,23 +18,6 @@
 #define  ST7735_LCD_PIXEL_HEIGHT   ((uint16_t)160)
 
 /**
- * @brief	ST7735 Colors
- */
-#define ST7735_BLACK   0x0000
-#define ST7735_GRAY    0x8410
-#define ST7735_WHITE   0xFFFF
-#define ST7735_RED     0xF800
-#define ST7735_ORANGE  0xFA60
-#define ST7735_YELLOW  0xFFE0
-#define ST7735_LIME    0x07FF
-#define ST7735_GREEN   0x07E0
-#define ST7735_CYAN    0x07FF
-#define ST7735_AQUA    0x04FF
-#define ST7735_BLUE    0x001F
-#define ST7735_MAGENTA 0xF81F
-#define ST7735_PINK    0xF8FF
-
-/**
   * @brief  ST7735 Registers
   */
 #define  LCD_REG_0               0x00 /* No Operation: NOP */
