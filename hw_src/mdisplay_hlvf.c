@@ -15,12 +15,12 @@
 #else
 	// Just for testing
 	#include <stdint.h>
-	#include "himage.h"
+	#include "debug/himage.h"
 
 	#define  ST7735_LCD_PIXEL_WIDTH    ((uint16_t)128)
 	#define  ST7735_LCD_PIXEL_HEIGHT   ((uint16_t)160)
 
-	extern hImage *_crObj;
+	extern hImage *_crObj; 
 
 	// Re-reference himage class methods
 	void (hImage::*_st7735_WritePixel)(uint32_t, uint32_t, uint8_t, uint8_t, uint8_t) = &hImage::setPixelRGB;

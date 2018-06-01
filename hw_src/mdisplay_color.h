@@ -10,8 +10,6 @@ extern "C" {
 #ifndef MDISPLAY_COLOR_H_
 #define MDISPLAY_COLOR_H_
 
-#define   DEBUG
-
 #ifdef DEBUG
   #include <stdint.h>
 #endif

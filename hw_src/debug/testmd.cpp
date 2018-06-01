@@ -6,9 +6,9 @@
 
 // Bibliothek zur Erstellung von BMP-Grafiken
 
-#include "mdisplay_color.h"
 #include "himage.h"
-#include "mdisplay_hlvf.h"
+#include "../mdisplay_color.h"
+#include "../mdisplay_hlvf.h"
 
 hImage *_crObj = nullptr;
 
@@ -39,7 +39,7 @@ int main(){
   // = Anzahl der Bildpunkte in der Laenge/Breite
   int n = 160;
   char str1[] = "Downtown we let it go";
-  char str2[] = "Sunset high";
+  char str2[] = "03:44";
 
   _crObj = new hImage(n, n, "test.bmp");
 

@@ -12,8 +12,6 @@ extern "C" {
 #ifndef MDISPLAY_HLVF_H_
 #define MDISPLAY_HLVF_H_
 
-#define   DEBUG
-
 #ifdef DEBUG
   #include <stdint.h>
 #endif
