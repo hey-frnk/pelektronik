@@ -14,12 +14,17 @@ hImage *_crObj = nullptr;
 
 using namespace std;
 
-// Mit allocateMatrix wird eine neue, uninitialisierte Matrix reserviert
-double** allocateMatrix(int n){
-  double** arr = new double*[n];
-  if(arr == nullptr) exit(-1);
-  for(int i = 0; i < n; ++i) arr[i] = new double[n];
-  return arr;
+// Rotate it right.
+void transpose(hImage* image1){
+  for(int i = 0; i < image1->getWidth(); ++i){
+    for(int j = 0; j < i; ++j){
+      for(int k = 0; k < 3; ++k){
+        uint8_t tmp = image1->getPixel(i, j, k);
+        image1->setPixel(i, j, image1->getPixel(j, i, k), k);
+        image1->setPixel(j, i, tmp, k);
+      }
+    }
+  }
 }
 
 // Mit deallocateMatrix soll eine nicht mehr benoetigte Matrix freigegeben werden
@@ -29,7 +34,6 @@ void deallocateMatrix(double** arr, int n){
 }
 
 
-// Simulation. Hier nichts veraendern!
 int main(){
   // Matrix-Dimension (n x n)
   // = Anzahl der Bildpunkte in der Laenge/Breite
@@ -50,6 +54,8 @@ int main(){
   //mdisplay_hlvf_DrawChar(2, 20, 'A', COLOR_BLUE, 1);
   //mdisplay_hlvf_DrawChar(2, 40, 'A', COLOR_GREEN, 2);
   //mdisplay_hlvf_DrawChar(2, 70, 'A', COLOR_RED, 3);
+
+  transpose(_crObj);
 
   cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
   delete _crObj;
