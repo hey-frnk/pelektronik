@@ -39,7 +39,7 @@ int main(){
   // = Anzahl der Bildpunkte in der Laenge/Breite
   int n = 160;
   char str1[] = "Downtown we let it go";
-  char str2[] = "03:44";
+  char str2[] = "08:43";
 
   _crObj = new hImage(n, n, "test.bmp");
 

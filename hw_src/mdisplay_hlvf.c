@@ -20,17 +20,15 @@
 	#define  ST7735_LCD_PIXEL_WIDTH    ((uint16_t)128)
 	#define  ST7735_LCD_PIXEL_HEIGHT   ((uint16_t)160)
 
-	extern hImage *_crObj; 
+	extern hImage *_crObj;
 
 	// Re-reference himage class methods
 	void (hImage::*_st7735_WritePixel)(uint32_t, uint32_t, uint8_t, uint8_t, uint8_t) = &hImage::setPixelRGB;
 	void (hImage::*_st7735_FillScreen)(uint32_t, uint32_t, uint32_t, uint32_t, uint8_t, uint8_t) = &hImage::setRectangle;
 
-	// Rewrite write pixel low level function
-	void st7735_WritePixel(uint16_t X, uint16_t Y, uint16_t color){
-		// Convert to RGB 888, write to image instance
-		(*_crObj.*_st7735_WritePixel)((uint32_t)X, (uint32_t)Y, ((color & 0xF800) >> 11) * 8.225806451612, ((color & 0x07E0) >> 5) * 4.047619047619, (color & 0x001F) * 8.225806451612);
-	}
+	// Rewrite write pixel low level function: Convert to RGB 888, write to image instance
+	#define st7735_WritePixel(X, Y, color) \
+		(*_crObj.*_st7735_WritePixel)((uint32_t)X, (uint32_t)Y, ((color & 0xF800) >> 11) * 8.225806451612, ((color & 0x07E0) >> 5) * 4.047619047619, (color & 0x001F) * 8.225806451612)
 
 	// Rewrite write line
 	void st7735_DrawHLine(uint16_t color, uint16_t Xpos, uint16_t Ypos, uint16_t Length){
