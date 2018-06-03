@@ -16,8 +16,10 @@ extern "C" {
   #include <stdint.h>
 #endif
 
-// Fill screen with 565 RGB color
+// Geometry functions
 void          mdisplay_hlvf_FillScreen(uint16_t color);
+void          mdisplay_hlvf_DrawRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color);
+void          mdisplay_hlvf_FillRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color);
 
 // Character / String functions
 // Draw character or string. 0: 5x7, 1: 8x14, 2: ...

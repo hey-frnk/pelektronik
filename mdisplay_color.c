@@ -43,9 +43,3 @@ uint16_t mdisplay_hsl_to565(uint8_t hue, uint8_t sat, uint8_t lum){
   }
   return mdisplay_rgb_to565(255.0 * r, 255.0 * g, 255.0 * b);
 }
-
-
-
-uint16_t mdisplay_color_wheel(uint8_t phi, uint8_t s, uint8_t l){
-  return mdisplay_hsl_to565(phi, s, l);
-}

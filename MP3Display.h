@@ -1,13 +1,17 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #ifndef MP3DISPLAY_HPP
 #define MP3DISPLAY_HPP
 
-typedef struct time {
+typedef struct mtime {
   uint8_t sec;
   uint8_t min;
   uint8_t hr;
-} time;
+} mtime;
 
 enum MDISPLAY_TYPE {
   MDISPLAY_TYPE_MENU            = 0,
@@ -18,23 +22,27 @@ enum MDISPLAY_TYPE {
 
 typedef struct MP3Display {
   // Methods
-  uint8_t     (*getType)                (void *this);
-  void        (*show)                   (void *this);
-  void        (*init)                   (struct MP3Display *this);
-  void        (*setBatteryState)        (struct MP3Display *this, uint8_t batteryLevel);
-  void        (*updateTime)             (struct MP3Display *this, time t);
+  uint8_t     (*getType)                (void *iptr);
+  void        (*show)                   (void *iptr);
+  void        (*init)                   (struct MP3Display *iptr);
+  void        (*setBatteryState)        (struct MP3Display *iptr, uint8_t batteryLevel);
+  void        (*updateTime)             (struct MP3Display *iptr, mtime t);
 
   // Attributes
-  struct MP3Display_vTable              *virtual;
-  time                                  t;
+  struct MP3Display_vTable              *vt;
+  mtime                                 t;
   uint8_t                               batteryLevel, type;
 } MP3Display;
 
 struct MP3Display_vTable {
-  uint8_t     (*getType)                (void *this);
-  void        (*show)                   (void *this);
+  uint8_t     (*getType)                (void *iptr);
+  void        (*show)                   (void *iptr);
 };
 
-void MP3Display_init(MP3Display *this);
+void MP3Display_init(MP3Display *iptr);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

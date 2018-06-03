@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // MP3 Data Interface functions
 
 #ifndef MP3DI_H
@@ -44,4 +48,8 @@ uint8_t MP3DI_skipForward(void);
 uint8_t MP3DI_skipBackward(void);
 
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

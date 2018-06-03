@@ -20,8 +20,8 @@
 	#include <stdint.h>
 	#include "debug/himage.h"
 
-	#define  ST7735_LCD_PIXEL_WIDTH    ((uint16_t)128)
-	#define  ST7735_LCD_PIXEL_HEIGHT   ((uint16_t)160)
+	#define  ST7735_LCD_PIXEL_WIDTH    ((uint16_t)160)
+	#define  ST7735_LCD_PIXEL_HEIGHT   ((uint16_t)128)
 
 	extern hImage *_crObj;
 
@@ -39,6 +39,12 @@
 		(*_crObj.*_st7735_FillScreen)(x, y, Length, 1, ((color & 0x07E0) >> 5) * 4.047619047619, 1);
 		(*_crObj.*_st7735_FillScreen)(x, y, Length, 1, (color & 0x001F) * 8.225806451612, 0);
 	}
+
+	void st7735_DrawVLine(uint16_t color, uint16_t x, uint16_t y, uint16_t Length){
+		(*_crObj.*_st7735_FillScreen)(x, y, 1, Length, ((color & 0xF800) >> 11) * 8.225806451612, 2);
+		(*_crObj.*_st7735_FillScreen)(x, y, 1, Length, ((color & 0x07E0) >> 5) * 4.047619047619, 1);
+		(*_crObj.*_st7735_FillScreen)(x, y, 1, Length, (color & 0x001F) * 8.225806451612, 0);
+	}
 #endif
 
 void mdisplay_hlvf_FillScreen(uint16_t color){
@@ -46,12 +52,23 @@ void mdisplay_hlvf_FillScreen(uint16_t color){
 		st7735_DrawHLine(color, 0, i, ST7735_LCD_PIXEL_WIDTH);
 }
 
+void mdisplay_hlvf_DrawRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color){
+	st7735_DrawHLine(color, x, y, width);
+	st7735_DrawHLine(color, x, y + height - 1, width);
+	st7735_DrawVLine(color, x, y, height);
+	st7735_DrawVLine(color, x + width - 1, y, height);
+}
+
+void mdisplay_hlvf_FillRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color){
+	for(uint8_t i = 0; i < height; ++i) st7735_DrawHLine(color, x, y + i, width);
+}
+
 static inline void _mdisplay_hlvf_retrieveWidthHeight(uint8_t fontSize, uint8_t *fWidth, uint8_t *fHeight, unsigned char **_cptr){
 	switch(fontSize){
 		case 0: *fWidth = 5; *fHeight = 7; if(_cptr) *_cptr = (unsigned char *)Font5x7; break;
 		case 1: *fWidth = 8; *fHeight = 14; if(_cptr) *_cptr = (unsigned char *)Font8x14; break;
 		case 2: *fWidth = 12; *fHeight = 16; if(_cptr) *_cptr = (unsigned char *)Font12x16; break;
-		case 3: *fWidth = 16; *fHeight = 26; if(_cptr) *_cptr = (unsigned char *)Font16x26; break;
+		// case 3: *fWidth = 16; *fHeight = 26; if(_cptr) *_cptr = (unsigned char *)Font16x26; break;
 	}
 }
 
@@ -109,7 +126,7 @@ void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t
 
 	// And draw!
 	while (*str){
-		mdisplay_hlvf_DrawChar(x, y, *str++, mdisplay_color_wheel((uint8_t)(cStart + (cD / (float)cL) * ++pC), s, l), fontSize);
+		mdisplay_hlvf_DrawChar(x, y, *str++, mdisplay_hsl_to565((uint8_t)(cStart + (cD / (float)cL) * ++pC), s, l), fontSize);
 		// Drawing inside
 		if(x < ST7735_LCD_PIXEL_WIDTH - ((fWidth + 1) << 1)) x += (fWidth + 1);
 		// Word wrap
@@ -124,8 +141,16 @@ static inline void _mdisplay_hlvf_retrieveIcon(uint8_t size, uint8_t *pixels, un
 		case HEART16: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Heart16x16; break;
 		case HEART24: 		*pixels = 24; if(_cptr) *_cptr = (unsigned char *)Heart24x24; break;
 		case RABBIT16: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Rabbit16x16; break;
-		case LAUGH16: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Laugh16x16; break;
-		case MAPLE16: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Maple16x16; break;
+		//case LAUGH16: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Laugh16x16; break;
+		//case MAPLE16: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Maple16x16; break;
+		case NAV_PLAY: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Play16x16; break;
+		case NAV_PAUSE: 	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Pause16x16; break;
+		case NAV_FWD: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Fwd16x16; break;
+		case NAV_RWD: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Rwd16x16; break;
+		case NAV_SOUND: 	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Sound16x16; break;
+		case NAV_REPA: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Repeat16x16; break;
+		case NAV_REPO: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)RepeatOnce16x16; break;
+		case NAV_SHUFFLE: *pixels = 16; if(_cptr) *_cptr = (unsigned char *)Shuffle16x16; break;
 	}
 }
 

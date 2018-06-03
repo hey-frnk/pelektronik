@@ -46,15 +46,17 @@ int main(int argc, char** argv){
 
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
   mdisplay_hlvf_DrawColorWheelString(1, 0, str1, 0, 255, 153, 77, 0);
+  mdisplay_hlvf_FillRectangle(10, 10, 20, 15, COLOR_BLACK);
   //mdisplay_hlvf_DrawColorWheelString(1, 10, str1, 76, 150, 153, 77, 1);
   // mdisplay_hlvf_DrawColorWheelString(2, 41, str1, 151, 250, 153, 77, 2);
   // mdisplay_hlvf_DrawString(2, 90, str2, COLOR_GRAYBLUE, 3);
 
-  mdisplay_hlvf_DrawIcon(0, 60, HEART24, COLOR_MAGENTA);
-  mdisplay_hlvf_DrawIcon(26, 60, HEART16, COLOR_GREEN);
+  mdisplay_hlvf_DrawIcon(0, 60, HEART24, COLOR_RED);
+  mdisplay_hlvf_DrawIcon(26, 60, HEART16, COLOR_RED);
   mdisplay_hlvf_DrawIcon(45, 60, RABBIT16, COLOR_GRAY);
-  mdisplay_hlvf_DrawIcon(63, 60, LAUGH16, 0xFE26);
-  mdisplay_hlvf_DrawIcon(63, 60, MAPLE16, 0x6000);
+
+  for(int i = NAV_PLAY; i <= NAV_SOUND; ++i) mdisplay_hlvf_DrawIcon(0 + 20 * (i - NAV_PLAY), 85, i, COLOR_BLACK);
+  for(int i = NAV_REPA; i <= NAV_SHUFFLE; ++i) mdisplay_hlvf_DrawIcon(0 + 20 * (i - NAV_REPA), 103, i, COLOR_BLACK);
 
   transpose(_crObj);
 
@@ -70,7 +72,9 @@ int main(int argc, char** argv){
   string fileName = argv[1];
 
   hImage* renderT = new hImage("../bitmap/" + fileName);
+  cout << "static unsigned char const 16x16[] = {" << endl;
   renderT->toBitStream();
+  cout << "};" << endl;
   delete renderT;
 
 
