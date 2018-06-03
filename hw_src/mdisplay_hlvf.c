@@ -147,10 +147,10 @@ void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color){
 	if(max == min) {h = 0; s = 0;}
 	else{
 		float d = _max - _min;
-    s = l > 0.5 ? d / (2.0 - _max - _min) : d / (_max + _min);
-    if(max == r) h = (_g - _b) / d + (_g < _b ? 6.0 : 0.0);
+		s = l > 0.5 ? d / (2.0 - _max - _min) : d / (_max + _min);
+		if(max == r) h = (_g - _b) / d + (_g < _b ? 6.0 : 0.0);
 		else if(max == g) h = (_b - _r) / d + 2.0;
-    else if(max == b) h = (_r - _g) / d + 4.0;
+		else if(max == b) h = (_r - _g) / d + 4.0;
 	}
 	// End of internal HSL transform
 
