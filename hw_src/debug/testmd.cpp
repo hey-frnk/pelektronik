@@ -7,6 +7,7 @@
 // Bibliothek zur Erstellung von BMP-Grafiken
 
 #include "himage.h"
+#include "../font.h"
 #include "../mdisplay_color.h"
 #include "../mdisplay_hlvf.h"
 
@@ -34,30 +35,53 @@ void deallocateMatrix(double** arr, int n){
 }
 
 
-int main(){
+int main(int argc, char** argv){
   // Matrix-Dimension (n x n)
   // = Anzahl der Bildpunkte in der Laenge/Breite
   int n = 160;
-  char str1[] = "Downtown we let it go";
-  char str2[] = "08:43";
+  char str1[] = "On some nights I still believe that a car with the gas needle on empty can run about fifty more miles with the right music on the radio";
+  // char str2[] = "11:53";
 
   _crObj = new hImage(n, n, "test.bmp");
 
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
-  mdisplay_hlvf_DrawColorWheelString(1, 0, str1, 0, 75, 153, 77, 0);
-  mdisplay_hlvf_DrawColorWheelString(1, 10, str1, 76, 150, 153, 77, 1);
-  mdisplay_hlvf_DrawColorWheelString(2, 41, str1, 151, 250, 153, 77, 2);
-  mdisplay_hlvf_DrawString(2, 90, str2, COLOR_GRAYBLUE, 3);
-  //mdisplay_hlvf_DrawColorWheelString(2, 0, str2, 71, 213, 153, 77, 2);
+  mdisplay_hlvf_DrawColorWheelString(1, 0, str1, 0, 255, 153, 77, 0);
+  //mdisplay_hlvf_DrawColorWheelString(1, 10, str1, 76, 150, 153, 77, 1);
+  // mdisplay_hlvf_DrawColorWheelString(2, 41, str1, 151, 250, 153, 77, 2);
+  // mdisplay_hlvf_DrawString(2, 90, str2, COLOR_GRAYBLUE, 3);
 
-  //mdisplay_hlvf_DrawChar(2, 0, 'A', COLOR_CYAN, 0);
-  //mdisplay_hlvf_DrawChar(2, 20, 'A', COLOR_BLUE, 1);
-  //mdisplay_hlvf_DrawChar(2, 40, 'A', COLOR_GREEN, 2);
-  //mdisplay_hlvf_DrawChar(2, 70, 'A', COLOR_RED, 3);
+  mdisplay_hlvf_DrawIcon(0, 60, HEART24, COLOR_MAGENTA);
+  mdisplay_hlvf_DrawIcon(26, 60, HEART16, COLOR_GREEN);
+  mdisplay_hlvf_DrawIcon(45, 60, RABBIT16, COLOR_GRAY);
+  mdisplay_hlvf_DrawIcon(63, 60, LAUGH16, 0xFE26);
+  mdisplay_hlvf_DrawIcon(63, 60, MAPLE16, 0x6000);
 
   transpose(_crObj);
 
   cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
   delete _crObj;
+
+
+  if (argc == 1){
+    cout << "No bitmap conversion requested" << endl;
+    return 0;
+  }
+
+  string fileName = argv[1];
+
+  hImage* renderT = new hImage("../bitmap/" + fileName);
+  renderT->toBitStream();
+  delete renderT;
+
+
+  /*uint8_t _cptr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+
+  for(uint8_t i = 0; i < 3; ++i){
+		for(uint8_t j = 0; j < 3; ++j){
+			printf("0x%hhx, ", _cptr[3 * i + j]);
+			//st7735_WritePixel(x + i, y + j, mdisplay_rgb_to565(_cptr[i * j + j], _cptr[i * j + j], _cptr[i * j + j]));
+		}
+		printf("\n");
+	}*/
 
 }

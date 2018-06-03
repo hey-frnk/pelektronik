@@ -11,41 +11,40 @@
   #include <stdint.h>
 #endif
 
-inline uint16_t mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b){
+uint16_t mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b){
   // Mapping goes like RRRRRGGGGGGBBBBB
   return ((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (b >> 3);
 }
 
-uint16_t mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l){
-  // Fast conversion algorithm, see https://stackoverflow.com/questions/13105185
-  uint8_t  r, g, b, lo, c, x, m;
-  uint16_t h1, l1, H;
-  l1 = l + 1;
-  if (l < 128) c = ((l1 << 1) * s) >> 8;
-  else c = (512 - (l1 << 1)) * s >> 8;
-
-  H = h * 6;      // 0 to 1535 (actually 1530)
-  lo = H & 255;   // Low byte  = primary/secondary color mix
-  h1 = lo + 1;
-
-  // even sextant, like red to yellow
-  if ((H & 256) == 0) x = h1 * c >> 8;
-  // odd sextant, like yellow to green
-  else x = (256 - h1) * c >> 8;
-
-  m = l - (c >> 1);
-  switch(H >> 8) {       // High byte = sextant of colorwheel
-    case 0 : r = c  ; g = x  ; b = 0  ; break; // R to Y
-    case 1 : r = x  ; g = c  ; b = 0  ; break; // Y to G
-    case 2 : r = 0  ; g = c  ; b = x  ; break; // G to C
-    case 3 : r = 0  ; g = x  ; b = c  ; break; // C to B
-    case 4 : r = x  ; g = 0  ; b = c  ; break; // B to M
-    default: r = c  ; g = 0  ; b = x  ; break; // M to R
-  }
-
-  // 888 to 565 color
-  return mdisplay_rgb_to565(r, g, b);
+static float _mdisplay_hsl_hue2rgb(float p, float q, float t){
+  if(t < 0.0) t += 1;
+  if(t > 1.0) t -= 1;
+  if(t < 0.16666666667f) return p + (q - p) * 6.0f * t;
+  if(t < 0.5f) return q;
+  if(t < 0.66666666667f) return p + (q - p) * (0.66666666667f - t) * 6.0f;
+  return p;
 }
+
+uint16_t mdisplay_hsl_to565(uint8_t hue, uint8_t sat, uint8_t lum){
+  // https://stackoverflow.com/questions/2353211
+  float h = hue / 255.0;
+  float s = sat / 255.0;
+  float l = lum / 255.0;
+  float r, g, b;
+
+  if(s == 0){
+      r = l; g = l; b = l; return mdisplay_rgb_to565(255.0 * r, 255.0 * g, 255.0 * b);
+  } else{
+      float q = l < 0.5f ? l * (1.0f + s) : l + s - l * s;
+      float p = 2.0f * l - q;
+      r = _mdisplay_hsl_hue2rgb(p, q, h + 0.333333333333f);
+      g = _mdisplay_hsl_hue2rgb(p, q, h);
+      b = _mdisplay_hsl_hue2rgb(p, q, h - 0.333333333333f);
+  }
+  return mdisplay_rgb_to565(255.0 * r, 255.0 * g, 255.0 * b);
+}
+
+
 
 uint16_t mdisplay_color_wheel(uint8_t phi, uint8_t s, uint8_t l){
   return mdisplay_hsl_to565(phi, s, l);

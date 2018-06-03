@@ -8,6 +8,7 @@
 #include <string>
 #include <unistd.h>
 #include "himage.h"
+#include "../mdisplay_color.h"
 
 hImage::hImage(uint32_t width, uint32_t height, std::string fileName) :
 width(width), height(height), fileName(fileName){
@@ -43,6 +44,19 @@ uint32_t hImage::getHeight(){
 
 uint8_t hImage::getPixel(uint32_t x, uint32_t y, uint8_t colorOffset){
   return imageData[(3 * x * width) + (3 * y) + colorOffset];
+}
+
+void hImage::toBitStream(){
+  for(int i = 0; i < width; ++i){
+    for(int j = 0; j < height; ++j){
+      uint8_t cV = (uint8_t)((getPixel(i, j, RED) + getPixel(i, j, GREEN) + getPixel(i, j, BLUE)) / 3.0);
+      printf("0x%hhx, ", cV);
+      /*if(cV == 0xFF) printf(" ");
+      else if (cV == 0x75) printf("@");
+      else printf("+");*/
+    }
+    printf("\n");
+  }
 }
 
 void hImage::setPixel(uint32_t x, uint32_t y, uint8_t value, uint8_t colorOffset){

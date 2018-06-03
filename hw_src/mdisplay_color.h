@@ -38,10 +38,10 @@ extern "C" {
 #define   COLOR_LBBLUE       0x2B12
 
 // RGB 888 (standard) to RGB 565 conversion
-inline uint16_t       mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b);
+uint16_t              mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b);
 
-// HSL (hue, saturation, luminance) to RGB 565 color space transform
-uint16_t              mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l);
+// True HSL (hue, saturation, luminance) to RGB 565 color space transform. All colors are beautiful
+uint16_t              mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l);  // h: [0, 255], s: [0, 255], l: [0, 255]
 
 // FP RGB 565 color wheel. Overflow at 255 (360°) will simple cause wheel to restart at 0 (0°)
 // s: saturation, l: brightness (luminance)
