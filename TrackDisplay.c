@@ -4,6 +4,7 @@
 
 #include "mdisplay_hlvf.h"
 #include "mdisplay_color.h"
+#include "font.h"
 
 struct MP3Display_vTable TrackDisplay_vS = {&TrackDisplay_getType, &TrackDisplay_show};
 
@@ -13,12 +14,25 @@ uint8_t TrackDisplay_getType(void *iptr) {
 }
 
 void TrackDisplay_show(void *iptr) {
-  printf("TrackDisplay: Show Method of MP3Display Called! Volume: %hhu\n", ((TrackDisplay *) iptr)->volume);
+  TrackDisplay *tptr = ((TrackDisplay *) iptr);
+  printf("TrackDisplay: Show Method of MP3Display Called! Volume: %hhu\n", tptr->volume);
 
-  char str1[] = "On some nights I still believe that a car with the gas needle on empty can run about fifty more miles with the right music on the radio";
-
+  // Universal header
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
-  mdisplay_hlvf_DrawColorWheelString(1, 0, str1, 0, 255, 153, 77, 0);
+  mdisplay_hlvf_DrawRectangle(0, 18, ST7735_LCD_PIXEL_WIDTH, 1, 0xe73c);
+  mdisplay_hlvf_DrawIcon(115, 1, NAV_SHUFFLE, 0xe73c);
+  mdisplay_hlvf_DrawString(50, 3, "11:30", COLOR_GRAY, 1);
+
+  // Track Name, album, artist information
+  mdisplay_hlvf_DrawColorWheelString(2, 45, tptr->trackName, 0, 255, 153, 77, 1);
+
+  char sBuf[100] = "";
+  sprintf(sBuf,"%s - %s", tptr->artistName, tptr->albumName);
+  mdisplay_hlvf_DrawString(14, 60, sBuf, COLOR_GRAY, 0);
+
+  // Progress bar
+  mdisplay_hlvf_FillRectangle(10, 80, ST7735_LCD_PIXEL_WIDTH - 20, 4, 0xe73c);
+
 }
 
 void TrackDisplay_setTrackInfo(TrackDisplay *iptr, char *trackName, char *artistName, char *albumName, uint32_t length){
@@ -54,4 +68,7 @@ void TrackDisplay_init(TrackDisplay *iptr) {
   iptr->changeVolume = TrackDisplay_changeVolume;
   iptr->changeMode = TrackDisplay_changeMode;
   iptr->changeStatus = TrackDisplay_changeStatus;
+
+  // Wipe screen
+  mdisplay_hlvf_FillScreen(COLOR_WHITE);
 }

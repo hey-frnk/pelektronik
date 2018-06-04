@@ -20,9 +20,6 @@
 	#include <stdint.h>
 	#include "debug/himage.h"
 
-	#define  ST7735_LCD_PIXEL_WIDTH    ((uint16_t)160)
-	#define  ST7735_LCD_PIXEL_HEIGHT   ((uint16_t)128)
-
 	extern hImage *_crObj;
 
 	// Re-reference himage class methods

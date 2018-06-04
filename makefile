@@ -14,7 +14,7 @@ TrackEQDisplay.o: TrackEQDisplay.c
 	clang -x c TrackEQDisplay.c -DDEBUG -std=c11 -Wall -c
 
 MP3Display_routines.o: MP3Display_routines.c
-	clang -x c MP3Display_routines.c -DDEBUG -std=c11 -Wall -c
+	clang++ -x c++ MP3Display_routines.c -DDEBUG -std=c++11 -Wall -c
 
 mdisplay_color.o: mdisplay_color.c
 	clang -x c mdisplay_color.c -DDEBUG -std=c11 -Wall -c

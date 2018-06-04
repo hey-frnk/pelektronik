@@ -2,7 +2,34 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#ifdef DEBUG
+  #include <iostream>
+  #include <string>
+  #include <sstream>
+  #include <fstream>
+  #include "debug/himage.h"
+
+  void transpose(hImage* image1){
+    for(int i = 0; i < image1->getWidth(); ++i){
+      for(int j = 0; j < i; ++j){
+        for(int k = 0; k < 3; ++k){
+          uint8_t tmp = image1->getPixel(i, j, k);
+          image1->setPixel(i, j, image1->getPixel(j, i, k), k);
+          image1->setPixel(j, i, tmp, k);
+        }
+      }
+    }
+  }
+
+  // find . -name .DS_Store -print0 | xargs -0 git rm -f --ignore-unmatch
+  hImage *_crObj = nullptr;
+
+  using namespace std;
+#endif
+
 #include "mdisplay_hlvf.h"
+#include "mdisplay_color.h"
+#include "font.h"
 
 #include "MP3Display.h"
 #include "MP3DI.h"
@@ -27,6 +54,15 @@ void (* MP3DisplayState_Routine[])(void) = { _routine_BOOT,        // Correspond
 Track* currentTrack = NULL;
 
 void _routine_BOOT(void){
+  #ifdef DEBUG
+  _crObj = new hImage(160, 160, "output.bmp");
+  #endif
+
+  mdisplay_hlvf_FillScreen(COLOR_WHITE);
+  mdisplay_hlvf_DrawIcon(35, 52, HEART16, COLOR_GRAY);
+  mdisplay_hlvf_DrawString(55, 53, "welcome.", COLOR_GRAY, 1);
+  mdisplay_hlvf_DrawColorWheelString(37, 73, "(C) by Kathi", 200, 255, 255, 127, 0);
+
   currentTrack = (Track *)malloc(sizeof(Track));
   static char trackName[] = "Technicolour Beat";
   static char artistName[] = "Oh Wonder";
@@ -36,10 +72,20 @@ void _routine_BOOT(void){
   currentTrack->albumName = albumName;
   currentTrack->length = 179;
 
+  #ifdef DEBUG
+    transpose(_crObj);
+    stringstream s;
+    s << "FSM_" << (int)mp3display_state << ".bmp";
+    _crObj -> setFileName(s.str());
+    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
+    transpose(_crObj);
+  #endif
+
+
   printf("Boot Successful. Entering next state (PLAY)\n");
   MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
-  (*MP3DisplayState_Routine[nextState])();
   mp3display_state = nextState;
+  (*MP3DisplayState_Routine[nextState])();
 }
 
 void _routine_PLAY(void){
@@ -50,19 +96,32 @@ void _routine_PLAY(void){
     TrackDisplay_init(INSTANCE_TrackDISPLAY);
 
     // Set active instance
-    INSTANCE_Active = INSTANCE_TrackDISPLAY;
+    INSTANCE_Active = (MP3Display *)INSTANCE_TrackDISPLAY;
 
     // Set track information
     if(currentTrack == NULL) return;  // Oh something went wrong
     INSTANCE_TrackDISPLAY->setTrackInfo(INSTANCE_TrackDISPLAY, currentTrack->trackName, currentTrack->artistName, currentTrack->albumName, currentTrack->length);
-    INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
+    // INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
   }
 
   // Display is active
   if(INSTANCE_TrackDISPLAY != NULL){
     printf("Track Display On. ");
     INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
+    INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 4);
+    INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 1);
   }
+
+  #ifdef DEBUG
+    printf("%d\n", (int)mp3display_state);
+
+    transpose(_crObj);
+    stringstream s;
+    s << "FSM_" << (int)mp3display_state << ".bmp";
+    _crObj -> setFileName(s.str());
+    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
+    transpose(_crObj);
+  #endif
 
 }
 
