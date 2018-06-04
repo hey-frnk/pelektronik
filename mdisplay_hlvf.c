@@ -60,19 +60,20 @@ void mdisplay_hlvf_FillRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t he
 	for(uint8_t i = 0; i < height; ++i) st7735_DrawHLine(color, x, y + i, width);
 }
 
-static inline void _mdisplay_hlvf_retrieveWidthHeight(uint8_t fontSize, uint8_t *fWidth, uint8_t *fHeight, unsigned char **_cptr){
+static inline void _mdisplay_hlvf_retrieveWidthHeight(uint8_t fontSize, uint8_t *fWidth, uint8_t *fHeight, uint8_t *xspPd, unsigned char **_cptr){
 	switch(fontSize){
-		case 0: *fWidth = 5; *fHeight = 7; if(_cptr) *_cptr = (unsigned char *)Font5x7; break;
-		case 1: *fWidth = 8; *fHeight = 14; if(_cptr) *_cptr = (unsigned char *)Font8x14; break;
-		case 2: *fWidth = 12; *fHeight = 16; if(_cptr) *_cptr = (unsigned char *)Font12x16; break;
+		case FONT_5X7: 		*fWidth = 5; 		*fHeight = 7; 	*xspPd = 1;		if(_cptr) *_cptr = (unsigned char *)Font5x7; 		break;
+		case FONT_8X12: 	*fWidth = 8; 		*fHeight = 12; 	*xspPd = 0;		if(_cptr) *_cptr = (unsigned char *)Font8x12; 	break;
+		case FONT_8X14: 	*fWidth = 8; 		*fHeight = 14; 	*xspPd = 1;		if(_cptr) *_cptr = (unsigned char *)Font8x14; 	break;
+		case FONT_12X16: 	*fWidth = 12; 	*fHeight = 16; 	*xspPd = 1;		if(_cptr) *_cptr = (unsigned char *)Font12x16; 	break;
 		// case 3: *fWidth = 16; *fHeight = 26; if(_cptr) *_cptr = (unsigned char *)Font16x26; break;
 	}
 }
 
 void mdisplay_hlvf_DrawChar(uint8_t x, uint8_t y, uint8_t chr, uint16_t color, uint8_t fontSize){
-	uint8_t fWidth = 0, fHeight = 0;
+	uint8_t fWidth = 0, fHeight = 0, xspPd;
 	unsigned char *_cptr;
-	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &_cptr);
+	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &xspPd, &_cptr);
 
 	// Aaaah, the perks of copying from different libraries!
 	if(fontSize == 0){
@@ -98,15 +99,27 @@ void mdisplay_hlvf_DrawChar(uint8_t x, uint8_t y, uint8_t chr, uint16_t color, u
 	}
 }
 
-void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint8_t fontSize){
+void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint8_t fontSize, uint8_t alignment){
+	// cL tells the length of str
+	uint8_t fWidth = 0, fHeight = 0, xspPd = 0;
+	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &xspPd, NULL);
+
+	// Length of string
+	uint16_t cL = strlen(str);
+
+	switch(alignment){
+		case ALIGNMENT_CENTER: 	x = x - (((fWidth + xspPd) * cL) >> 1); break;
+		case ALIGNMENT_RIGHT:		x = x - ((fWidth + xspPd) * cL); 				break;
+		default: break;
+	}
+
 	// _x, _y are local backups of X and Y
-	uint8_t fWidth = 0, fHeight = 0, _x = x, _y = y;
-	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, NULL);
+	uint8_t _x = x, _y = y;
 
 	while (*str) {
 		mdisplay_hlvf_DrawChar(x, y, *str++, color, fontSize);
 		// Drawing inside
-		if(x < ST7735_LCD_PIXEL_WIDTH - ((fWidth + 1) << 1)) x += (fWidth + 1);
+		if(x < ST7735_LCD_PIXEL_WIDTH - ((fWidth + xspPd) << 1)) x += (fWidth + xspPd);
 		// Word wrap
 		else if (y < ST7735_LCD_PIXEL_HEIGHT - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
 		// Reset otherwise
@@ -114,18 +127,28 @@ void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, u
 	}
 }
 
-void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t cStart, uint8_t cEnd, uint8_t s, uint8_t l, uint8_t fontSize){
-	// _x, _y are local backups of X and Y needed for word wrap. cD (cDiff) is the color range
-	uint8_t fWidth = 0, fHeight = 0, _x = x, _y = y, cD = cEnd - cStart;
+void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t cStart, uint8_t cEnd, uint8_t s, uint8_t l, uint8_t fontSize, uint8_t alignment){
 	// cL tells the length of str, pC is the position counter
+	uint8_t fWidth = 0, fHeight = 0, xspPd = 0, cD = cEnd - cStart;
+	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &xspPd, NULL);
+
+	// Length of string
 	uint16_t cL = strlen(str), pC = 0;
-	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, NULL);
+
+	switch(alignment){
+		case ALIGNMENT_CENTER: 	x = x - (((fWidth + xspPd) * cL) >> 1); break;
+		case ALIGNMENT_RIGHT:		x = x - ((fWidth + xspPd) * cL); 				break;
+		default: break;
+	}
+
+	// _x, _y are local backups of X and Y
+	uint8_t _x = x, _y = y;
 
 	// And draw!
 	while (*str){
 		mdisplay_hlvf_DrawChar(x, y, *str++, mdisplay_hsl_to565((uint8_t)(cStart + (cD / (float)cL) * ++pC), s, l), fontSize);
 		// Drawing inside
-		if(x < ST7735_LCD_PIXEL_WIDTH - ((fWidth + 1) << 1)) x += (fWidth + 1);
+		if(x < ST7735_LCD_PIXEL_WIDTH - ((fWidth + xspPd) << 1)) x += (fWidth + xspPd);
 		// Word wrap
 		else if (y < ST7735_LCD_PIXEL_HEIGHT - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
 		// Reset otherwise

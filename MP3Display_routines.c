@@ -59,9 +59,9 @@ void _routine_BOOT(void){
   #endif
 
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
-  mdisplay_hlvf_DrawIcon(35, 52, HEART16, COLOR_GRAY);
-  mdisplay_hlvf_DrawString(55, 53, "welcome.", COLOR_GRAY, 1);
-  mdisplay_hlvf_DrawColorWheelString(37, 73, "(C) by Kathi", 200, 255, 255, 127, 0);
+  mdisplay_hlvf_DrawIcon(35, 47, HEART16, COLOR_GRAY);
+  mdisplay_hlvf_DrawString(56, 48, "welcome.", COLOR_GRAY, FONT_8X14, ALIGNMENT_LEFT);
+  mdisplay_hlvf_DrawColorWheelString((ST7735_LCD_PIXEL_WIDTH >> 1), 68, "(C) by #CreateWithVFDCo", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
 
   currentTrack = (Track *)malloc(sizeof(Track));
   static char trackName[] = "Technicolour Beat";
@@ -109,7 +109,7 @@ void _routine_PLAY(void){
     printf("Track Display On. ");
     INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
     INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 4);
-    INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 1);
+    INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 3);
   }
 
   #ifdef DEBUG

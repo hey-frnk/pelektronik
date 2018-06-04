@@ -21,17 +21,19 @@ void TrackDisplay_show(void *iptr) {
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
   mdisplay_hlvf_DrawRectangle(0, 18, ST7735_LCD_PIXEL_WIDTH, 1, 0xe73c);
   mdisplay_hlvf_DrawIcon(115, 1, NAV_SHUFFLE, 0xe73c);
-  mdisplay_hlvf_DrawString(50, 3, "11:30", COLOR_GRAY, 1);
+  mdisplay_hlvf_DrawString((ST7735_LCD_PIXEL_WIDTH >> 1), 3, "11:30", COLOR_GRAY, FONT_8X12, ALIGNMENT_CENTER);
 
   // Track Name, album, artist information
-  mdisplay_hlvf_DrawColorWheelString(2, 45, tptr->trackName, 0, 255, 153, 77, 1);
+  mdisplay_hlvf_DrawColorWheelString((ST7735_LCD_PIXEL_WIDTH >> 1), 45, tptr->trackName, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_CENTER);
 
   char sBuf[100] = "";
   sprintf(sBuf,"%s - %s", tptr->artistName, tptr->albumName);
-  mdisplay_hlvf_DrawString(14, 60, sBuf, COLOR_GRAY, 0);
+  mdisplay_hlvf_DrawString((ST7735_LCD_PIXEL_WIDTH >> 1), 60, sBuf, COLOR_GRAY, FONT_5X7, ALIGNMENT_CENTER);
 
   // Progress bar
-  mdisplay_hlvf_FillRectangle(10, 80, ST7735_LCD_PIXEL_WIDTH - 20, 4, 0xe73c);
+  mdisplay_hlvf_FillRectangle(10, 80, ST7735_LCD_PIXEL_WIDTH - 50, 4, 0xe73c);
+  mdisplay_hlvf_FillRectangle(10, 80, ST7735_LCD_PIXEL_WIDTH - 80, 4, COLOR_GRAY);
+  mdisplay_hlvf_DrawString(125, 78, "3:17", COLOR_GRAY, FONT_5X7, ALIGNMENT_LEFT);
 
 }
 
