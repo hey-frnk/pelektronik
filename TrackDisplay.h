@@ -7,6 +7,13 @@ extern "C" {
 #ifndef TrackDISPLAY_HPP
 #define TrackDISPLAY_HPP
 
+enum TRACKDISPLAY_MODES {
+  TRACKDISPLAY_MODE_NONE,
+  TRACKDISPLAY_MODE_SHUFFLE,
+  TRACKDISPLAY_MODE_REPEATALL,
+  TRACKDISPLAY_MODE_REPEATONE
+};
+
 typedef struct TrackDisplay {
   MP3Display                super;
 

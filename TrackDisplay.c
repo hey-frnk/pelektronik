@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "MP3Display.h"
 #include "TrackDisplay.h"
 
@@ -6,7 +8,16 @@
 #include "mdisplay_color.h"
 #include "font.h"
 
+#define PBAR_LENGTH   (ST7735_LCD_PIXEL_WIDTH - 60)
+
 struct MP3Display_vTable TrackDisplay_vS = {&TrackDisplay_getType, &TrackDisplay_show};
+
+char *_concat(const char *s1, const char *s2){
+  char *result = malloc(strlen(s1) + strlen(s2) + 1);
+  strcpy(result, s1);
+  strcat(result, s2);
+  return result;
+}
 
 uint8_t TrackDisplay_getType(void *iptr) {
   printf("TrackDisplay: Type: %hhu\n", ((TrackDisplay *) iptr)->super.type);
@@ -17,24 +28,67 @@ void TrackDisplay_show(void *iptr) {
   TrackDisplay *tptr = ((TrackDisplay *) iptr);
   printf("TrackDisplay: Show Method of MP3Display Called! Volume: %hhu\n", tptr->volume);
 
-  // Universal header
-  mdisplay_hlvf_FillScreen(COLOR_WHITE);
-  mdisplay_hlvf_DrawRectangle(0, 18, ST7735_LCD_PIXEL_WIDTH, 1, 0xe73c);
-  mdisplay_hlvf_DrawIcon(115, 1, NAV_SHUFFLE, 0xe73c);
-  mdisplay_hlvf_DrawString((ST7735_LCD_PIXEL_WIDTH >> 1), 3, "11:30", COLOR_GRAY, FONT_8X12, ALIGNMENT_CENTER);
+  // Retrieve track name text width
+  uint16_t _trNWidth = strlen(tptr->trackName);
+  if((_trNWidth << 3) <= (ST7735_LCD_PIXEL_WIDTH - 20)){
+    // No rotating required
+    mdisplay_hlvf_DrawColorWheelString((ST7735_LCD_PIXEL_WIDTH >> 1), 45, tptr->trackName, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_CENTER);
+  } else {
+    // Rotate!
+    const uint16_t _TNBUFLENGTH = 19;
+    static uint16_t rPos = 0, dx = 0; // Begin very left
+    if(dx < 7) ++dx;
+    else{
+      dx = 0;
+      rPos = (rPos + (_TNBUFLENGTH - 1) < _trNWidth) ? rPos + 1 : 0;
+    }
 
-  // Track Name, album, artist information
-  mdisplay_hlvf_DrawColorWheelString((ST7735_LCD_PIXEL_WIDTH >> 1), 45, tptr->trackName, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_CENTER);
+    char _TNBUF[_TNBUFLENGTH];            // 17 chars + 1 + one terminator
+    strncpy(_TNBUF, tptr->trackName + rPos, (_TNBUFLENGTH - 1));
+    _TNBUF[(_TNBUFLENGTH - 1)] = '\0';
 
-  char sBuf[100] = "";
-  sprintf(sBuf,"%s - %s", tptr->artistName, tptr->albumName);
-  mdisplay_hlvf_DrawString((ST7735_LCD_PIXEL_WIDTH >> 1), 60, sBuf, COLOR_GRAY, FONT_5X7, ALIGNMENT_CENTER);
+    mdisplay_hlvf_FillRectangle(0, 45, ST7735_LCD_PIXEL_WIDTH, 12, COLOR_WHITE);
+    mdisplay_hlvf_DrawColorWheelString(10 - dx, 45, _TNBUF, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_LEFT);
+    mdisplay_hlvf_FillRectangle(0, 45, 10, 12, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(ST7735_LCD_PIXEL_WIDTH - 10, 45, 10, 12, COLOR_WHITE);
+  }
 
-  // Progress bar
-  mdisplay_hlvf_FillRectangle(10, 80, ST7735_LCD_PIXEL_WIDTH - 50, 4, 0xe73c);
-  mdisplay_hlvf_FillRectangle(10, 80, ST7735_LCD_PIXEL_WIDTH - 80, 4, COLOR_GRAY);
-  mdisplay_hlvf_DrawString(125, 78, "3:17", COLOR_GRAY, FONT_5X7, ALIGNMENT_LEFT);
+  // Retrieve artist, album information
+  char* _BUF0 = _concat(" - ", tptr->albumName);
+  char* _BUF1 = _concat(tptr->artistName, _BUF0);
+  uint16_t _aaWidth = strlen(_BUF1);
+  if((_aaWidth * 6) <= (ST7735_LCD_PIXEL_WIDTH - 20)){ // No rotating, too
+    mdisplay_hlvf_DrawString((ST7735_LCD_PIXEL_WIDTH >> 1), 60, _BUF1, COLOR_GRAY, FONT_5X7, ALIGNMENT_CENTER);
+  } else {
+    // Rotate!
+    const uint16_t _AALENGTH = 25;
+    static uint16_t rPos = 0, dx = 0; // Begin very left
+    if(dx < 5) ++dx;
+    else{
+      dx = 0;
+      rPos = (rPos + (_AALENGTH - 1) < _aaWidth) ? rPos + 1 : 0;
+    }
 
+    char _AABUF[_AALENGTH];            // 17 chars + 1 + one terminator
+    strncpy(_AABUF, _BUF1 + rPos, (_AALENGTH - 1));
+    _AABUF[(_AALENGTH - 1)] = '\0';
+
+    mdisplay_hlvf_FillRectangle(0, 60, ST7735_LCD_PIXEL_WIDTH, 7, COLOR_WHITE);
+    mdisplay_hlvf_DrawString(10 - dx, 60, _AABUF, COLOR_GRAY, FONT_5X7, ALIGNMENT_LEFT);
+    mdisplay_hlvf_FillRectangle(0, 60, 9, 7, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(ST7735_LCD_PIXEL_WIDTH - 10, 60, 9, 7, COLOR_WHITE);
+  }
+
+  free(_BUF0); free(_BUF1);
+
+  // Progress bar updating
+  uint8_t progress = 140.0 * ((float)PBAR_LENGTH / tptr->length);
+  mdisplay_hlvf_FillRectangle(10, 80, PBAR_LENGTH, 4, 0xe73c);
+  mdisplay_hlvf_FillRectangle(10, 80, progress, 4, COLOR_GRAY);
+  // Get minute second representation
+  uint32_t lMinutes = tptr->length / 60, lSeconds = tptr->length % 60;
+  char tConst[6] = {lMinutes / 10 + '0', lMinutes % 10 + '0', ':', lSeconds / 10 + '0', lSeconds % 10 + '0', 0};
+  mdisplay_hlvf_DrawString(ST7735_LCD_PIXEL_WIDTH - 10, 78, tConst, COLOR_GRAY, FONT_5X7, ALIGNMENT_RIGHT);
 }
 
 void TrackDisplay_setTrackInfo(TrackDisplay *iptr, char *trackName, char *artistName, char *albumName, uint32_t length){
@@ -53,6 +107,13 @@ void TrackDisplay_changeVolume(TrackDisplay *iptr, uint8_t volume){
 
 void TrackDisplay_changeMode(TrackDisplay *iptr, uint8_t mode){
   iptr->mode = mode;
+  // Shuffle Status
+  switch(mode){
+    case TRACKDISPLAY_MODE_NONE:      mdisplay_hlvf_FillRectangle(115, 1, 16, 16, COLOR_WHITE);     break;    // Blank this
+    case TRACKDISPLAY_MODE_SHUFFLE:   mdisplay_hlvf_DrawIcon(115, 1, NAV_SHUFFLE, 0xe73c);          break;
+    case TRACKDISPLAY_MODE_REPEATALL: mdisplay_hlvf_DrawIcon(115, 1, NAV_REPA, 0xe73c);             break;
+    case TRACKDISPLAY_MODE_REPEATONE: mdisplay_hlvf_DrawIcon(115, 1, NAV_REPO, 0xe73c);             break;
+  }
   printf("TrackDisplay: Mode change to: %hhu\n", iptr->mode);
 }
 

@@ -66,7 +66,7 @@ void _routine_BOOT(void){
   currentTrack = (Track *)malloc(sizeof(Track));
   static char trackName[] = "Technicolour Beat";
   static char artistName[] = "Oh Wonder";
-  static char albumName[] = "Oh Wonder";
+  static char albumName[] = "Technicolour Beat [Single]";
   currentTrack->trackName = trackName;
   currentTrack->artistName = artistName;
   currentTrack->albumName = albumName;
@@ -101,15 +101,16 @@ void _routine_PLAY(void){
     // Set track information
     if(currentTrack == NULL) return;  // Oh something went wrong
     INSTANCE_TrackDISPLAY->setTrackInfo(INSTANCE_TrackDISPLAY, currentTrack->trackName, currentTrack->artistName, currentTrack->albumName, currentTrack->length);
-    // INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
+    INSTANCE_TrackDISPLAY->changeMode(INSTANCE_TrackDISPLAY, TRACKDISPLAY_MODE_REPEATONE);
   }
 
   // Display is active
   if(INSTANCE_TrackDISPLAY != NULL){
     printf("Track Display On. ");
     INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
-    INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 4);
+    // INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 4);
     INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 3);
+    INSTANCE_TrackDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackDISPLAY, {11, 47, 22});
   }
 
   #ifdef DEBUG
