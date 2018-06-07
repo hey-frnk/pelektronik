@@ -17,7 +17,7 @@ enum TRACKDISPLAY_MODES {
 typedef struct TrackDisplay {
   MP3Display                super;
 
-  void        (*init)                   (struct TrackDisplay *iptr);
+  // void        (*init)                   (struct TrackDisplay *iptr);
   void        (*setTrackInfo)           (struct TrackDisplay *iptr, char *trackName, char *artistName, char *albumName, uint32_t length);
   void        (*changeVolume)           (struct TrackDisplay *iptr, uint8_t volume);
   void        (*changeMode)             (struct TrackDisplay *iptr, uint8_t mode);

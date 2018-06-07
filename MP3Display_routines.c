@@ -36,6 +36,7 @@
 #include "MP3Display.h"
 #include "MP3DI.h"
 #include "TrackDisplay.h"
+#include "MenuDisplay.h"
 #include "MP3Display_routines.h"
 
 // Active Instance
@@ -43,6 +44,7 @@ MP3Display* INSTANCE_Active = NULL;
 
 // Possible allocated instances
 TrackDisplay* INSTANCE_TrackDISPLAY = NULL;
+MenuDisplay* INSTANCE_MenuDISPLAY = NULL;
 
 // Current state variable
 MP3Display_State mp3display_state = MP3DISPLAYSTATE_BOOT;
@@ -52,6 +54,15 @@ void (* MP3DisplayState_Routine[])(void) = { _routine_BOOT,        // Correspond
                                               _routine_MAINMENU, _routine_SETTINGS,
                                               _routine_RECORD, _routine_SLEEP,
                                               _routine_SHUTDOWN };
+
+const uint32_t menuElementCount = 4;
+const char* menuElements[menuElementCount] = { "Now Playing",
+                                "Shuffle All",
+                                "Record Voice",
+                                "Settings" };
+const uint8_t menuElementIconArray[menuElementCount] = {
+  NAV_PLAY, HEART16, RABBIT16, NAV_PAUSE
+};
 
 Track* currentTrack = NULL;
 
@@ -85,15 +96,34 @@ void _routine_BOOT(void){
     _crObj -> setFileName(s.str());
     cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
     transpose(_crObj);
+
+    // Read next state
+    char c = 0;
+    cout << "Boot Successful. Any key to continue: ";
+    cin >> ws;
+    cin >> c;
+
+    if(c == 'e') exit(0);
+    else if(c == 'm'){
+      printf("Entering next state (MENU)\n");
+      MP3Display_State nextState = MP3DISPLAYSTATE_MAINMENU;
+      mp3display_state = nextState;
+      (*MP3DisplayState_Routine[nextState])();
+    } else {
+      printf("Entering next state (PLAY)\n");
+      MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
+      mp3display_state = nextState;
+      (*MP3DisplayState_Routine[nextState])();
+    }
   #else
     HAL_Delay(2000);
+
+    printf("Boot Successful. Entering next state (PLAY)\n");
+    MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
+    mp3display_state = nextState;
+    (*MP3DisplayState_Routine[nextState])();
   #endif
 
-
-  printf("Boot Successful. Entering next state (PLAY)\n");
-  MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
-  mp3display_state = nextState;
-  (*MP3DisplayState_Routine[nextState])();
 }
 
 void _routine_PLAY(void){
@@ -140,7 +170,51 @@ void _routine_TRACKLIST(void){
 }
 
 void _routine_MAINMENU(void){
-  printf("Hello4\n");
+  // Check for main menu instance availability
+  if(INSTANCE_MenuDISPLAY == NULL){
+    INSTANCE_MenuDISPLAY = (MenuDisplay *)malloc(sizeof(MenuDisplay));
+    MenuDisplay_init(INSTANCE_MenuDISPLAY);
+    INSTANCE_Active = (MP3Display *)INSTANCE_MenuDISPLAY;
+
+    INSTANCE_MenuDISPLAY->updateItems(INSTANCE_MenuDISPLAY, (char **)menuElements, (uint8_t *)menuElementIconArray, menuElementCount);
+  }
+
+  if(INSTANCE_MenuDISPLAY != NULL){
+    INSTANCE_MenuDISPLAY->super.show(INSTANCE_MenuDISPLAY);
+    INSTANCE_MenuDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_MenuDISPLAY, 1);
+    mtime t = {11, 26, 23};
+    INSTANCE_MenuDISPLAY->super.updateTime((MP3Display *)INSTANCE_MenuDISPLAY, t);
+  }
+
+  #ifdef DEBUG
+    transpose(_crObj);
+    stringstream s;
+    s << "FSM_" << (int)mp3display_state << ".bmp";
+    _crObj -> setFileName(s.str());
+    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
+    transpose(_crObj);
+
+    printf("%d\n", (int)mp3display_state);
+    // Read next state
+    char c = 0;
+    cout << "Main menu. What to do next? (u: up, d: down, p: play): ";
+    cin >> ws;
+    cin >> c;
+
+    if(c == 'e') exit(0);
+    else if(c == 'u'){
+      printf("Menu up pressed\n");
+      INSTANCE_MenuDISPLAY->itemUp(INSTANCE_MenuDISPLAY);
+    } else if(c == 'd'){
+      printf("Menu down pressed\n");
+      INSTANCE_MenuDISPLAY->itemDown(INSTANCE_MenuDISPLAY);
+    } else if(c == 'p'){
+      printf("Entering next state (PLAY)\n");
+      MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
+      mp3display_state = nextState;
+      (*MP3DisplayState_Routine[nextState])();
+    }
+  #endif
 }
 
 void _routine_SETTINGS(void){

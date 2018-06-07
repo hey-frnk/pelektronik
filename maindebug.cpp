@@ -29,10 +29,17 @@ int main() {
   for ever {
     MP3Display_routine();
 
-    char c;
-    printf("Routine end. Any key to continue\n");
-    scanf("%c\n", &c);
-    if(c == 'e') break;
+    char c = 0;
+    cout << "All end (for real). Any key to continue: ";
+    cin >> ws;
+    cin >> c;
+
+    if(c == 'e') exit(0);
+
+    /*printf("########################### \n");
+    printf("All end. Any key to continue: ");
+    char c = getchar();
+    if(c == 'e') exit(0);*/
   }
 
 

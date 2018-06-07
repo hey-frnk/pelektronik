@@ -15,8 +15,12 @@ static uint8_t MP3Display_getType(void *iptr) {
 
 static void MP3Display_show(void *iptr) {
   // Universal header
-  // UI Line
-  mdisplay_hlvf_DrawRectangle(0, 18, _global_width, 1, 0xe73c);
+  // UI Line 0xE73C
+  #ifdef DEBUG
+    mdisplay_hlvf_DrawRectangle(0, 18, _global_width, 1, COLOR_GRAY);
+  #else
+    st7735_DrawHLine(COLOR_GRAY, 0, 18, _global_width);
+  #endif
 
   ((MP3Display *)iptr)->vt->show(iptr);
 }
