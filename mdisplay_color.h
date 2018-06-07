@@ -10,9 +10,7 @@ extern "C" {
 #ifndef MDISPLAY_COLOR_H_
 #define MDISPLAY_COLOR_H_
 
-#ifdef DEBUG
-  #include <stdint.h>
-#endif
+#include <stdint.h>
 
 // Basic RGB 565 Colors
 #define   COLOR_WHITE        0xFFFF
@@ -38,10 +36,13 @@ extern "C" {
 #define   COLOR_LBBLUE       0x2B12
 
 // RGB 888 (standard) to RGB 565 conversion
-uint16_t              mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b);
+extern uint16_t       mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b);
 
 // True HSL (hue, saturation, luminance) to RGB 565 color space transform. All colors are beautiful
-uint16_t              mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l);  // h: [0, 255], s: [0, 255], l: [0, 255]
+uint16_t              mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l);  // h, s, l: [0, 255]
+// uint16_t              mdisplay_hslp_to565(uint8_t h, uint8_t s, uint8_t l); // Fixed point arithmetics
+// uint16_t              mdisplay_hslf_to565(float h, float s, float l);       // h, s, l: [0, 1] (faster)
+
 
 #ifdef __cplusplus
 }

@@ -82,6 +82,11 @@
   */
 
 
+uint16_t _global_width = ST7735_LCD_PIXEL_WIDTH;
+uint16_t _global_height = ST7735_LCD_PIXEL_HEIGHT;
+uint16_t rotation = 0;
+
+
 LCD_DrvTypeDef   st7735_drv =
 {
   st7735_Init,
@@ -99,7 +104,7 @@ LCD_DrvTypeDef   st7735_drv =
   st7735_DrawBitmap,
 };
 
-static uint16_t ArrayRGB[320] = {0};
+// static uint16_t ArrayRGB[320] = {0};
 
 /**
 * @}
@@ -296,7 +301,7 @@ void st7735_SetCursor(uint16_t Xpos, uint16_t Ypos)
 void st7735_WritePixel(uint16_t Xpos, uint16_t Ypos, uint16_t RGBCode)
 {
   uint8_t data = 0;
-  if((Xpos >= ST7735_LCD_PIXEL_WIDTH) || (Ypos >= ST7735_LCD_PIXEL_HEIGHT))
+  if((Xpos >= _global_width) || (Ypos >= _global_height))
   {
     return;
   }
@@ -356,6 +361,26 @@ void st7735_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint1
   LCD_IO_WriteMultipleData(&data, 1);
 }
 
+inline void st7735_setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+{
+	uint8_t dArray[8] = {0, x0, 0, x1, 0, y0, 0, y1};
+	uint8_t *p = dArray;
+
+	LCD_IO_WriteReg(0x2A);
+	LCD_IO_WriteMultipleData(p++, 1);
+	LCD_IO_WriteMultipleData(p++, 1);
+	LCD_IO_WriteMultipleData(p++, 1);
+	LCD_IO_WriteMultipleData(p++, 1);
+
+    LCD_IO_WriteReg(0x2B);
+    LCD_IO_WriteMultipleData(p++, 1);
+    LCD_IO_WriteMultipleData(p++, 1);
+    LCD_IO_WriteMultipleData(p++, 1);
+    LCD_IO_WriteMultipleData(p++, 1);
+
+    LCD_IO_WriteReg(0x2C);
+}
+
 /**
   * @brief  Draws horizontal line.
   * @param  RGBCode: Specifies the RGB color
@@ -364,40 +389,65 @@ void st7735_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint1
   * @param  Length: specifies the line length.
   * @retval None
   */
-void st7735_DrawHLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length)
+void st7735_DrawHLine(uint16_t color, uint16_t x, uint16_t y, uint16_t w)
 {
-  uint8_t counter = 0;
+	// Rudimentary clipping
+	if((x >= _global_width) || (y >= _global_height)) return;
+	if((x + w - 1) >= _global_width) w = _global_width - x;
 
-  if(Xpos + Length > ST7735_LCD_PIXEL_WIDTH) return;
+	st7735_setAddrWindow(x, y, x + w - 1, y);
+	uint8_t cArray[2] = {color, color >> 8};
 
-  /* Set Cursor */
-  st7735_SetCursor(Xpos, Ypos);
-
-  for(counter = 0; counter < Length; counter++)
-  {
-    ArrayRGB[counter] = RGBCode;
-  }
-  LCD_IO_WriteMultipleData((uint8_t*)&ArrayRGB[0], Length * 2);
+	while (w--) LCD_IO_WriteMultipleData(cArray, 2);
 }
 
-/**
-  * @brief  Draws vertical line.
-  * @param  RGBCode: Specifies the RGB color
-  * @param  Xpos: specifies the X position.
-  * @param  Ypos: specifies the Y position.
-  * @param  Length: specifies the line length.
-  * @retval None
-  */
-void st7735_DrawVLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length)
+void st7735_DrawVLine(uint16_t color, uint16_t x, uint16_t y, uint16_t h)
 {
-  uint8_t counter = 0;
+	// Rudimentary clipping
+	if((x >= _global_width) || (y >= _global_height)) return;
+	if((y + h - 1) >= _global_height) h = _global_height - y;
 
-  if(Ypos + Length > ST7735_LCD_PIXEL_HEIGHT) return;
-  for(counter = 0; counter < Length; counter++)
-  {
-    st7735_WritePixel(Xpos, Ypos + counter, RGBCode);
-  }
+	st7735_setAddrWindow(x, y, x, y + h - 1);
+	uint8_t cArray[2] = {color, color >> 8};
+
+	while (h--) LCD_IO_WriteMultipleData(cArray, 2);
 }
+
+
+
+void st7735_setRotation(uint8_t m){
+	LCD_IO_WriteReg(LCD_REG_54);
+	rotation = m % 4; // can't be higher than 3
+	uint8_t mdWrite = 0x00;
+	switch (rotation) {
+	case 0:
+		mdWrite = MADCTL_MX | MADCTL_MY | MADCTL_RGB;
+		LCD_IO_WriteMultipleData(&mdWrite, 1);
+	    _global_width  = ST7735_LCD_PIXEL_WIDTH;
+	    _global_height = ST7735_LCD_PIXEL_HEIGHT;
+	    break;
+	case 1:
+		mdWrite = MADCTL_MY | MADCTL_MV | MADCTL_RGB;
+		LCD_IO_WriteMultipleData(&mdWrite, 1);
+	    _global_width  = ST7735_LCD_PIXEL_HEIGHT;
+	    _global_height = ST7735_LCD_PIXEL_WIDTH;
+	    break;
+	case 2:
+		mdWrite = MADCTL_RGB;
+		LCD_IO_WriteMultipleData(&mdWrite, 1);
+	    _global_width  = ST7735_LCD_PIXEL_WIDTH;
+	    _global_height = ST7735_LCD_PIXEL_HEIGHT;
+	    break;
+	case 3:
+		mdWrite = MADCTL_MX | MADCTL_MV | MADCTL_RGB;
+		LCD_IO_WriteMultipleData(&mdWrite, 1);
+	    _global_width  = ST7735_LCD_PIXEL_HEIGHT;
+	    _global_height = ST7735_LCD_PIXEL_WIDTH;
+	    break;
+	}
+}
+
+
 
 /**
   * @brief  Gets the LCD pixel Width.
@@ -406,7 +456,7 @@ void st7735_DrawVLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t L
   */
 uint16_t st7735_GetLcdPixelWidth(void)
 {
-  return ST7735_LCD_PIXEL_WIDTH;
+  return _global_width;
 }
 
 /**
@@ -416,7 +466,7 @@ uint16_t st7735_GetLcdPixelWidth(void)
   */
 uint16_t st7735_GetLcdPixelHeight(void)
 {
-  return ST7735_LCD_PIXEL_HEIGHT;
+  return _global_height;
 }
 
 /**
@@ -468,4 +518,3 @@ void st7735_DrawBitmap(uint16_t Xpos, uint16_t Ypos, uint8_t *pbmp)
 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-

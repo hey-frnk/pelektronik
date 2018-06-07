@@ -25,6 +25,8 @@
   hImage *_crObj = nullptr;
 
   using namespace std;
+#else
+  #include "st7735.h"
 #endif
 
 #include "mdisplay_hlvf.h"
@@ -56,15 +58,20 @@ Track* currentTrack = NULL;
 void _routine_BOOT(void){
   #ifdef DEBUG
   _crObj = new hImage(160, 160, "output.bmp");
+  #else
+  st7735_Init();				// Initialize Display
+  st7735_DisplayOn();
+  st7735_setRotation(1);
   #endif
 
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
-  mdisplay_hlvf_DrawIcon(35, 47, HEART16, COLOR_GRAY);
+  mdisplay_hlvf_DrawIcon(35, 47, RABBIT16, COLOR_GRAY);
   mdisplay_hlvf_DrawString(56, 48, "welcome.", COLOR_GRAY, FONT_8X14, ALIGNMENT_LEFT);
-  mdisplay_hlvf_DrawColorWheelString((ST7735_LCD_PIXEL_WIDTH >> 1), 68, "(C) by #CreateWithVFDCo", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
+  // mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, "(C) by #CreateWithVFDCo", 0.7843137255, 1.0, 1.0, 0.5, FONT_5X7, ALIGNMENT_CENTER);
+  mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, "(C) by #CreateWithVFDCo", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
 
   currentTrack = (Track *)malloc(sizeof(Track));
-  static char trackName[] = "Technicolour Beat";
+  static char trackName[] = "Technicolour Beat - Single";
   static char artistName[] = "Oh Wonder";
   static char albumName[] = "Technicolour Beat [Single]";
   currentTrack->trackName = trackName;
@@ -79,6 +86,8 @@ void _routine_BOOT(void){
     _crObj -> setFileName(s.str());
     cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
     transpose(_crObj);
+  #else
+    HAL_Delay(2000);
   #endif
 
 
@@ -101,16 +110,17 @@ void _routine_PLAY(void){
     // Set track information
     if(currentTrack == NULL) return;  // Oh something went wrong
     INSTANCE_TrackDISPLAY->setTrackInfo(INSTANCE_TrackDISPLAY, currentTrack->trackName, currentTrack->artistName, currentTrack->albumName, currentTrack->length);
-    INSTANCE_TrackDISPLAY->changeMode(INSTANCE_TrackDISPLAY, TRACKDISPLAY_MODE_REPEATONE);
+    INSTANCE_TrackDISPLAY->changeMode(INSTANCE_TrackDISPLAY, TRACKDISPLAY_MODE_SHUFFLE);
   }
 
   // Display is active
   if(INSTANCE_TrackDISPLAY != NULL){
-    printf("Track Display On. ");
+    // printf("Track Display On. ");
     INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
     // INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 4);
     INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 3);
-    INSTANCE_TrackDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackDISPLAY, {11, 47, 22});
+    mtime t = {11, 50, 13};
+    INSTANCE_TrackDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackDISPLAY, t);
   }
 
   #ifdef DEBUG

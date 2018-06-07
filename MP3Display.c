@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include "MP3Display.h"
 
+#ifndef DEBUG
+#include "st7735.h"
+#endif
+
 #include "mdisplay_hlvf.h"
 #include "mdisplay_color.h"
 #include "font.h"
@@ -12,7 +16,7 @@ static uint8_t MP3Display_getType(void *iptr) {
 static void MP3Display_show(void *iptr) {
   // Universal header
   // UI Line
-  mdisplay_hlvf_DrawRectangle(0, 18, ST7735_LCD_PIXEL_WIDTH, 1, 0xe73c);
+  mdisplay_hlvf_DrawRectangle(0, 18, _global_width, 1, 0xe73c);
 
   ((MP3Display *)iptr)->vt->show(iptr);
 }
@@ -35,7 +39,7 @@ static void setBatteryState(MP3Display *iptr, uint8_t batteryLevel) {
 static void updateTime(MP3Display *iptr, mtime t) {
   iptr->t = t;
   char tConst[6] = {(t.hr / 10) + '0', (t.hr % 10) + '0', ':', (t.min / 10) + '0', (t.min % 10) + '0', 0};
-  mdisplay_hlvf_DrawString((ST7735_LCD_PIXEL_WIDTH >> 1), 3, tConst, COLOR_GRAY, FONT_8X12, ALIGNMENT_CENTER);
+  mdisplay_hlvf_DrawString((_global_width >> 1), 3, tConst, COLOR_GRAY, FONT_8X12, ALIGNMENT_CENTER);
   printf("Time: %hhuh, %hhum, %hhus\n", iptr->t.hr, iptr->t.min, iptr->t.sec);
 }
 

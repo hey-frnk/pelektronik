@@ -4,11 +4,15 @@
 #include "MP3Display.h"
 #include "TrackDisplay.h"
 
+#ifndef DEBUG
+#include "st7735.h"
+#endif
+
 #include "mdisplay_hlvf.h"
 #include "mdisplay_color.h"
 #include "font.h"
 
-#define PBAR_LENGTH   (ST7735_LCD_PIXEL_WIDTH - 60)
+#define PBAR_LENGTH   (160 - 60)
 
 struct MP3Display_vTable TrackDisplay_vS = {&TrackDisplay_getType, &TrackDisplay_show};
 
@@ -26,13 +30,21 @@ uint8_t TrackDisplay_getType(void *iptr) {
 
 void TrackDisplay_show(void *iptr) {
   TrackDisplay *tptr = ((TrackDisplay *) iptr);
-  printf("TrackDisplay: Show Method of MP3Display Called! Volume: %hhu\n", tptr->volume);
+  // printf("TrackDisplay: Show Method of MP3Display Called! Volume: %hhu\n", tptr->volume);
 
-  // Retrieve track name text width
+  // Retrieve track name text width, retrieve artist, album information
   uint16_t _trNWidth = strlen(tptr->trackName);
-  if((_trNWidth << 3) <= (ST7735_LCD_PIXEL_WIDTH - 20)){
+  char* _BUF0 = _concat(" - ", tptr->albumName);
+  char* _BUF1 = _concat(tptr->artistName, _BUF0);
+  uint16_t _aaWidth = strlen(_BUF1);
+
+  uint8_t _blankFlag0 = (_trNWidth << 3) <= (_global_width - 20);
+  uint8_t _blankFlag1 = (_aaWidth * 6) <= (_global_width - 20);
+
+  if(_blankFlag0){
     // No rotating required
-    mdisplay_hlvf_DrawColorWheelString((ST7735_LCD_PIXEL_WIDTH >> 1), 45, tptr->trackName, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_CENTER);
+    //mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 45, tptr->trackName, 0.0, 1.0, 0.6, 0.3019607843, FONT_8X12, ALIGNMENT_CENTER);
+    mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 45, tptr->trackName, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_CENTER);
   } else {
     // Rotate!
     const uint16_t _TNBUFLENGTH = 19;
@@ -47,18 +59,15 @@ void TrackDisplay_show(void *iptr) {
     strncpy(_TNBUF, tptr->trackName + rPos, (_TNBUFLENGTH - 1));
     _TNBUF[(_TNBUFLENGTH - 1)] = '\0';
 
-    mdisplay_hlvf_FillRectangle(0, 45, ST7735_LCD_PIXEL_WIDTH, 12, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(10, 45, _global_width - 20, 12, COLOR_WHITE);
+    // mdisplay_hlvf_DrawColorWheelString(10 - dx, 45, _TNBUF, 0.0, 1.0, 0.6, 0.3019607843, FONT_8X12, ALIGNMENT_LEFT);
     mdisplay_hlvf_DrawColorWheelString(10 - dx, 45, _TNBUF, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_LEFT);
     mdisplay_hlvf_FillRectangle(0, 45, 10, 12, COLOR_WHITE);
-    mdisplay_hlvf_FillRectangle(ST7735_LCD_PIXEL_WIDTH - 10, 45, 10, 12, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(_global_width - 10, 45, 10, 12, COLOR_WHITE);
   }
 
-  // Retrieve artist, album information
-  char* _BUF0 = _concat(" - ", tptr->albumName);
-  char* _BUF1 = _concat(tptr->artistName, _BUF0);
-  uint16_t _aaWidth = strlen(_BUF1);
-  if((_aaWidth * 6) <= (ST7735_LCD_PIXEL_WIDTH - 20)){ // No rotating, too
-    mdisplay_hlvf_DrawString((ST7735_LCD_PIXEL_WIDTH >> 1), 60, _BUF1, COLOR_GRAY, FONT_5X7, ALIGNMENT_CENTER);
+  if(_blankFlag1){ // No rotating, too
+    mdisplay_hlvf_DrawString((_global_width >> 1), 60, _BUF1, COLOR_GRAY, FONT_5X7, ALIGNMENT_CENTER);
   } else {
     // Rotate!
     const uint16_t _AALENGTH = 25;
@@ -73,10 +82,11 @@ void TrackDisplay_show(void *iptr) {
     strncpy(_AABUF, _BUF1 + rPos, (_AALENGTH - 1));
     _AABUF[(_AALENGTH - 1)] = '\0';
 
-    mdisplay_hlvf_FillRectangle(0, 60, ST7735_LCD_PIXEL_WIDTH, 7, COLOR_WHITE);
+	  mdisplay_hlvf_FillRectangle(10, 60, _global_width - 20, 7, COLOR_WHITE);
     mdisplay_hlvf_DrawString(10 - dx, 60, _AABUF, COLOR_GRAY, FONT_5X7, ALIGNMENT_LEFT);
-    mdisplay_hlvf_FillRectangle(0, 60, 9, 7, COLOR_WHITE);
-    mdisplay_hlvf_FillRectangle(ST7735_LCD_PIXEL_WIDTH - 10, 60, 9, 7, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(0, 60, 10, 7, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(_global_width - 10, 60, 9, 7, COLOR_WHITE);
+    HAL_Delay(100);
   }
 
   free(_BUF0); free(_BUF1);
@@ -88,7 +98,7 @@ void TrackDisplay_show(void *iptr) {
   // Get minute second representation
   uint32_t lMinutes = tptr->length / 60, lSeconds = tptr->length % 60;
   char tConst[6] = {lMinutes / 10 + '0', lMinutes % 10 + '0', ':', lSeconds / 10 + '0', lSeconds % 10 + '0', 0};
-  mdisplay_hlvf_DrawString(ST7735_LCD_PIXEL_WIDTH - 10, 78, tConst, COLOR_GRAY, FONT_5X7, ALIGNMENT_RIGHT);
+  mdisplay_hlvf_DrawString(_global_width - 10, 78, tConst, COLOR_GRAY, FONT_5X7, ALIGNMENT_RIGHT);
 }
 
 void TrackDisplay_setTrackInfo(TrackDisplay *iptr, char *trackName, char *artistName, char *albumName, uint32_t length){

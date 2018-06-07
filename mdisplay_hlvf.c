@@ -20,6 +20,10 @@
 	#include <stdint.h>
 	#include "debug/himage.h"
 
+	uint16_t _global_width = ST7735_LCD_PIXEL_WIDTH;
+	uint16_t _global_height = ST7735_LCD_PIXEL_HEIGHT;
+	uint16_t rotation = 0;
+
 	extern hImage *_crObj;
 
 	// Re-reference himage class methods
@@ -45,8 +49,8 @@
 #endif
 
 void mdisplay_hlvf_FillScreen(uint16_t color){
-	for(uint8_t i = 0; i < ST7735_LCD_PIXEL_HEIGHT; ++i)
-		st7735_DrawHLine(color, 0, i, ST7735_LCD_PIXEL_WIDTH);
+	for(uint8_t i = 0; i < _global_height; ++i)
+		st7735_DrawHLine(color, 0, i, _global_width);
 }
 
 void mdisplay_hlvf_DrawRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color){
@@ -57,7 +61,8 @@ void mdisplay_hlvf_DrawRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t he
 }
 
 void mdisplay_hlvf_FillRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color){
-	for(uint8_t i = 0; i < height; ++i) st7735_DrawHLine(color, x, y + i, width);
+	if(width > height) for(uint8_t i = 0; i < height; ++i) st7735_DrawHLine(color, x, y + i, width);
+	else for(uint8_t i = 0; i < width; ++i) st7735_DrawVLine(color, x + i, y, height);
 }
 
 static inline void _mdisplay_hlvf_retrieveWidthHeight(uint8_t fontSize, uint8_t *fWidth, uint8_t *fHeight, uint8_t *xspPd, unsigned char **_cptr){
@@ -94,7 +99,7 @@ void mdisplay_hlvf_DrawChar(uint8_t x, uint8_t y, uint8_t chr, uint16_t color, u
 		for(uint8_t i = 0; i < fHeight; ++i)
 			for(uint8_t j = 0; j < _rshAdj; ++j)
 				for(uint8_t k = 0; k <= n; ++k)
-					if((buffer[(i << n) + k] >> j) & 0x01) st7735_WritePixel(x + (fWidth - j - k * 8), y + i, color);
+					if((buffer[(i << n) + k] >> j) & 0x01) st7735_WritePixel(x + (fWidth - j - (k << 3)), y + i, color);
 
 	}
 }
@@ -119,17 +124,20 @@ void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, u
 	while (*str) {
 		mdisplay_hlvf_DrawChar(x, y, *str++, color, fontSize);
 		// Drawing inside
-		if(x < ST7735_LCD_PIXEL_WIDTH - ((fWidth + xspPd) << 1)) x += (fWidth + xspPd);
+		if(x < _global_width - ((fWidth + xspPd) << 1)) x += (fWidth + xspPd);
 		// Word wrap
-		else if (y < ST7735_LCD_PIXEL_HEIGHT - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
+		else if (y < _global_height - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
 		// Reset otherwise
 		else {x =_x; y =_y;}
 	}
 }
 
 void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t cStart, uint8_t cEnd, uint8_t s, uint8_t l, uint8_t fontSize, uint8_t alignment){
+//void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, float cStart, float cEnd, float s, float l, uint8_t fontSize, uint8_t alignment){
 	// cL tells the length of str, pC is the position counter
-	uint8_t fWidth = 0, fHeight = 0, xspPd = 0, cD = cEnd - cStart;
+	uint8_t fWidth = 0, fHeight = 0, xspPd = 0;
+	// float cD = cEnd - cStart;
+	uint8_t cD = cEnd - cStart;
 	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &xspPd, NULL);
 
 	// Length of string
@@ -148,9 +156,9 @@ void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t
 	while (*str){
 		mdisplay_hlvf_DrawChar(x, y, *str++, mdisplay_hsl_to565((uint8_t)(cStart + (cD / (float)cL) * ++pC), s, l), fontSize);
 		// Drawing inside
-		if(x < ST7735_LCD_PIXEL_WIDTH - ((fWidth + xspPd) << 1)) x += (fWidth + xspPd);
+		if(x < _global_width - ((fWidth + xspPd) << 1)) x += (fWidth + xspPd);
 		// Word wrap
-		else if (y < ST7735_LCD_PIXEL_HEIGHT - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
+		else if (y < _global_height - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
 		// Reset otherwise
 		else {x =_x; y =_y;}
 	}

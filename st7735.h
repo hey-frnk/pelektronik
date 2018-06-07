@@ -17,6 +17,27 @@
 #define  ST7735_LCD_PIXEL_WIDTH    ((uint16_t)128)
 #define  ST7735_LCD_PIXEL_HEIGHT   ((uint16_t)160)
 
+extern uint16_t _global_width;
+extern uint16_t _global_height;
+extern uint16_t rotation;
+
+/**
+ * @brief	ST7735 Colors
+ */
+#define ST7735_BLACK   0x0000
+#define ST7735_GRAY    0x8410
+#define ST7735_WHITE   0xFFFF
+#define ST7735_RED     0xF800
+#define ST7735_ORANGE  0xFA60
+#define ST7735_YELLOW  0xFFE0
+#define ST7735_LIME    0x07FF
+#define ST7735_GREEN   0x07E0
+#define ST7735_CYAN    0x07FF
+#define ST7735_AQUA    0x04FF
+#define ST7735_BLUE    0x001F
+#define ST7735_MAGENTA 0xF81F
+#define ST7735_PINK    0xF8FF
+
 /**
   * @brief  ST7735 Registers
   */
@@ -72,6 +93,16 @@
 #define  LCD_REG_224             0xE0 /* Set Gamma adjustment (+ polarity): GAMCTRP1 */
 #define  LCD_REG_225             0xE1 /* Set Gamma adjustment (- polarity): GAMCTRN1 */
 
+
+#define MADCTL_MY  0x80
+#define MADCTL_MX  0x40
+#define MADCTL_MV  0x20
+#define MADCTL_ML  0x10
+#define MADCTL_RGB 0x00
+#define MADCTL_BGR 0x08
+#define MADCTL_MH  0x04
+
+
 /**
   * @brief  LCD Lines depending on the chosen fonts.
   */
@@ -114,8 +145,10 @@ void     st7735_WriteReg(uint8_t LCDReg, uint8_t LCDRegValue);
 uint8_t  st7735_ReadReg(uint8_t LCDReg);
 
 void     st7735_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height);
-void     st7735_DrawHLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length);
-void     st7735_DrawVLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length);
+void     st7735_DrawHLine(uint16_t color, uint16_t x, uint16_t y, uint16_t w);
+void     st7735_DrawVLine(uint16_t color, uint16_t x, uint16_t y, uint16_t h);
+
+void     st7735_setRotation(uint8_t m);
 
 uint16_t st7735_GetLcdPixelWidth(void);
 uint16_t st7735_GetLcdPixelHeight(void);
