@@ -300,19 +300,21 @@ void st7735_SetCursor(uint16_t Xpos, uint16_t Ypos)
   */
 void st7735_WritePixel(uint16_t Xpos, uint16_t Ypos, uint16_t RGBCode)
 {
-  uint8_t data = 0;
-  if((Xpos >= _global_width) || (Ypos >= _global_height))
-  {
-    return;
-  }
+   //uint8_t data = 0;
+  // if((Xpos >= _global_width) || (Ypos >= _global_height)) return;
+
+  uint8_t *rgbcode = (uint8_t *)&RGBCode;
 
   /* Set Cursor */
   st7735_SetCursor(Xpos, Ypos);
 
-  data = RGBCode >> 8;
+  LCD_IO_WriteMultipleData(rgbcode + 1, 1);
+  LCD_IO_WriteMultipleData(rgbcode, 1);
+
+  /*data = RGBCode >> 8;
   LCD_IO_WriteMultipleData(&data, 1);
   data = RGBCode;
-  LCD_IO_WriteMultipleData(&data, 1);
+  LCD_IO_WriteMultipleData(&data, 1);*/
 }
 
 

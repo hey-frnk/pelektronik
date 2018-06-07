@@ -1,5 +1,5 @@
-main: maindebug.o MP3Display.o TrackDisplay.o TrackEQDisplay.o MP3Display_routines.o mdisplay_color.c mdisplay_hlvf.o himage.o
-	clang++ -DDEBUG -o main maindebug.o MP3Display.o TrackDisplay.o TrackEQDisplay.o mdisplay_color.c mdisplay_hlvf.o MP3Display_routines.o himage.o
+main: maindebug.o MP3Display.o TrackDisplay.o MP3Display_routines.o mdisplay_color.c mdisplay_hlvf.o himage.o
+	clang++ -DDEBUG -o main maindebug.o MP3Display.o TrackDisplay.o mdisplay_color.c mdisplay_hlvf.o MP3Display_routines.o himage.o
 
 maindebug.o: maindebug.cpp
 	clang++ -x c++ maindebug.cpp -DDEBUG -std=c++11 -Wall -c
@@ -9,9 +9,6 @@ MP3Display.o: MP3Display.c
 
 TrackDisplay.o: TrackDisplay.c
 	clang -x c TrackDisplay.c -DDEBUG -std=c11 -Wall -c
-
-TrackEQDisplay.o: TrackEQDisplay.c
-	clang -x c TrackEQDisplay.c -DDEBUG -std=c11 -Wall -c
 
 MP3Display_routines.o: MP3Display_routines.c
 	clang++ -x c++ MP3Display_routines.c -DDEBUG -std=c++11 -Wall -c

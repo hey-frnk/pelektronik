@@ -48,6 +48,26 @@
 	}
 #endif
 
+
+static uint16_t const CWHEEL_LOOKUP[256] = {
+	0x78e3, 0x7903, 0x7903, 0x7923, 0x7923, 0x7943, 0x7943, 0x7963, 0x7983, 0x7983, 0x79a3, 0x79a3, 0x79c3, 0x79c3, 0x79e3, 0x79e3,
+	0x7a03, 0x7a03, 0x7a23, 0x7a43, 0x7a43, 0x7a63, 0x7a63, 0x7a83, 0x7a83, 0x7aa3, 0x7aa3, 0x7ac3, 0x7ac3, 0x7ae3, 0x7b03, 0x7b03,
+	0x7b23, 0x7b23, 0x7b43, 0x7b43, 0x7b63, 0x7b63, 0x7b83, 0x7b83, 0x7ba3, 0x7ba3, 0x7bc3, 0x7bc3, 0x73c3, 0x73c3, 0x73c3, 0x73c3,
+	0x6bc3, 0x6bc3, 0x6bc3, 0x6bc3, 0x63c3, 0x63c3, 0x63c3, 0x63c3, 0x5bc3, 0x5bc3, 0x5bc3, 0x53c3, 0x53c3, 0x53c3, 0x53c3, 0x4bc3,
+	0x4bc3, 0x4bc3, 0x4bc3, 0x43c3, 0x43c3, 0x43c3, 0x3bc3, 0x3bc3, 0x3bc3, 0x3bc3, 0x33c3, 0x33c3, 0x33c3, 0x33c3, 0x2bc3, 0x2bc3,
+	0x2bc3, 0x23c3, 0x23c3, 0x23c3, 0x23c3, 0x1bc3, 0x1bc4, 0x1bc4, 0x1bc4, 0x1bc4, 0x1bc5, 0x1bc5, 0x1bc5, 0x1bc6, 0x1bc6, 0x1bc6,
+	0x1bc6, 0x1bc7, 0x1bc7, 0x1bc7, 0x1bc7, 0x1bc8, 0x1bc8, 0x1bc8, 0x1bc9, 0x1bc9, 0x1bc9, 0x1bc9, 0x1bca, 0x1bca, 0x1bca, 0x1bca,
+	0x1bcb, 0x1bcb, 0x1bcb, 0x1bcc, 0x1bcc, 0x1bcc, 0x1bcc, 0x1bcd, 0x1bcd, 0x1bcd, 0x1bcd, 0x1bce, 0x1bce, 0x1bce, 0x1bce, 0x1bcf,
+	0x1bcf, 0x1baf, 0x1baf, 0x1b8f, 0x1b8f, 0x1b6f, 0x1b6f, 0x1b4f, 0x1b4f, 0x1b2f, 0x1b2f, 0x1b0f, 0x1b0f, 0x1aef, 0x1acf, 0x1acf,
+	0x1aaf, 0x1aaf, 0x1a8f, 0x1a8f, 0x1a6f, 0x1a6f, 0x1a4f, 0x1a4f, 0x1a2f, 0x1a0f, 0x1a0f, 0x19ef, 0x19ef, 0x19cf, 0x19cf, 0x19af,
+	0x19af, 0x198f, 0x198f, 0x196f, 0x194f, 0x194f, 0x192f, 0x192f, 0x190f, 0x190f, 0x18ef, 0x20ef, 0x20ef, 0x20ef, 0x20ef, 0x28ef,
+	0x28ef, 0x28ef, 0x30ef, 0x30ef, 0x30ef, 0x30ef, 0x38ef, 0x38ef, 0x38ef, 0x38ef, 0x40ef, 0x40ef, 0x40ef, 0x48ef, 0x48ef, 0x48ef,
+	0x48ef, 0x50ef, 0x50ef, 0x50ef, 0x50ef, 0x58ef, 0x58ef, 0x58ef, 0x60ef, 0x60ef, 0x60ef, 0x60ef, 0x68ef, 0x68ef, 0x68ef, 0x68ef,
+	0x70ef, 0x70ef, 0x70ef, 0x70ef, 0x78ef, 0x78ef, 0x78ee, 0x78ee, 0x78ee, 0x78ee, 0x78ed, 0x78ed, 0x78ed, 0x78ed, 0x78ec, 0x78ec,
+	0x78ec, 0x78ec, 0x78eb, 0x78eb, 0x78eb, 0x78ea, 0x78ea, 0x78ea, 0x78ea, 0x78e9, 0x78e9, 0x78e9, 0x78e9, 0x78e8, 0x78e8, 0x78e8,
+	0x78e7, 0x78e7, 0x78e7, 0x78e7, 0x78e6, 0x78e6, 0x78e6, 0x78e6, 0x78e5, 0x78e5, 0x78e5, 0x78e4, 0x78e4, 0x78e4, 0x78e4, 0x78e3
+};
+
 void mdisplay_hlvf_FillScreen(uint16_t color){
 	for(uint8_t i = 0; i < _global_height; ++i)
 		st7735_DrawHLine(color, 0, i, _global_width);
@@ -82,25 +102,35 @@ void mdisplay_hlvf_DrawChar(uint8_t x, uint8_t y, uint8_t chr, uint16_t color, u
 
 	// Aaaah, the perks of copying from different libraries!
 	if(fontSize == 0){
-		uint8_t buffer[fWidth];			// Width defines font length
-		memcpy(buffer, &_cptr[(chr - 0x20) * fWidth], fWidth);
-		for(uint8_t j = 0; j < fHeight; ++j)
-			for(uint8_t i = 0; i < fWidth; ++i)
-				if((buffer[i] >> j) & 0x01) st7735_WritePixel(x + i, y + j, color);
+		uint8_t _ypj;
+
+		// uint8_t buffer[fWidth];			// Width defines font length
+		// memcpy(buffer, &_cptr[(chr - 0x20) * fWidth], fWidth);
+		uint8_t *buffer = &_cptr[(chr - 0x20) * fWidth];
+		for(uint8_t j = 0; j < fHeight; ++j){
+			_ypj = y + j;
+			for(uint8_t i = 0; i < fWidth; ++i) if((buffer[i] >> j) & 0x01) st7735_WritePixel(x + i, _ypj, color);
+		}
 	} else {
+		uint8_t _ishn, _ypi, _xpfw = x + fWidth, _fwmj, _fwecp = fWidth > 8;
+
 		// Extra sort of alignment?
-		uint8_t n = (fWidth > 8) ? 1 : 0;
-		uint8_t _rshAdj = (fWidth > 8) ? 8 : fWidth;
+		uint8_t n = _fwecp ? 1 : 0;
+		uint8_t _rshAdj = _fwecp ? 8 : fWidth;
 
 		uint8_t _fHeight = fHeight << n;
-		uint8_t buffer[_fHeight];		// Height defines font length
-		memcpy(buffer, &_cptr[(chr - 0x20) * _fHeight], _fHeight);
+		// uint8_t buffer[_fHeight];		// Height defines font length
+		// memcpy(buffer, &_cptr[(chr - 0x20) * _fHeight], _fHeight);
+		uint8_t *buffer = &_cptr[(chr - 0x20) * _fHeight];
 
-		for(uint8_t i = 0; i < fHeight; ++i)
-			for(uint8_t j = 0; j < _rshAdj; ++j)
-				for(uint8_t k = 0; k <= n; ++k)
-					if((buffer[(i << n) + k] >> j) & 0x01) st7735_WritePixel(x + (fWidth - j - (k << 3)), y + i, color);
-
+		for(uint8_t i = 0; i < fHeight; ++i){
+			_ishn = i << n;
+			_ypi = i + y;
+			for(uint8_t j = 0; j < _rshAdj; ++j){
+				_fwmj = _xpfw - j;
+				for(uint8_t k = 0; k <= n; ++k) if((buffer[_ishn + k] >> j) & 0x01) st7735_WritePixel(_fwmj - (k << 3), _ypi, color);
+			}
+		}
 	}
 }
 
@@ -154,7 +184,37 @@ void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t
 
 	// And draw!
 	while (*str){
-		mdisplay_hlvf_DrawChar(x, y, *str++, mdisplay_hsl_to565((uint8_t)(cStart + (cD / (float)cL) * ++pC), s, l), fontSize);
+		mdisplay_hlvf_DrawChar(x, y, *str++, mdisplay_hsl_to565(cStart + (uint8_t)(((uint16_t)cD * ++pC) / (float)cL), s, l), fontSize);
+		// Drawing inside
+		if(x < _global_width - ((fWidth + xspPd) << 1)) x += (fWidth + xspPd);
+		// Word wrap
+		else if (y < _global_height - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
+		// Reset otherwise
+		else {x =_x; y =_y;}
+	}
+}
+
+void mdisplay_hlvf_DrawColorWheelStringFast(uint8_t x, uint8_t y, char *str, uint8_t fontSize, uint8_t alignment){
+	// cL tells the length of str, pC is the position counter
+	uint8_t fWidth = 0, fHeight = 0, xspPd = 0;
+	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &xspPd, NULL);
+
+	// Length of string
+	uint8_t cL = strlen(str), pC = 0;
+	float fT = 255.0f / (float)cL;
+
+	switch(alignment){
+		case ALIGNMENT_CENTER: 	x = x - (((fWidth + xspPd) * cL) >> 1); break;
+		case ALIGNMENT_RIGHT:		x = x - ((fWidth + xspPd) * cL); 				break;
+		default: break;
+	}
+
+	// _x, _y are local backups of X and Y
+	uint8_t _x = x, _y = y;
+
+	// And draw!
+	while (*str){
+		mdisplay_hlvf_DrawChar(x, y, *str++, CWHEEL_LOOKUP[(uint8_t)((float)++pC * fT)], fontSize);
 		// Drawing inside
 		if(x < _global_width - ((fWidth + xspPd) << 1)) x += (fWidth + xspPd);
 		// Word wrap

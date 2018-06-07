@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include "MP3Display.h"
 #include "TrackDisplay.h"
-#include "TrackEQDisplay.h"
 #include "MP3Display_routines.h"
 
 #include "debug/himage.h"

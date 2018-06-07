@@ -43,8 +43,8 @@ void TrackDisplay_show(void *iptr) {
 
   if(_blankFlag0){
     // No rotating required
-    //mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 45, tptr->trackName, 0.0, 1.0, 0.6, 0.3019607843, FONT_8X12, ALIGNMENT_CENTER);
-    mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 45, tptr->trackName, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_CENTER);
+    // mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 45, tptr->trackName, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_CENTER);
+    mdisplay_hlvf_DrawColorWheelStringFast((_global_width >> 1), 45, tptr->trackName, FONT_8X12, ALIGNMENT_CENTER);
   } else {
     // Rotate!
     const uint16_t _TNBUFLENGTH = 19;
@@ -60,8 +60,8 @@ void TrackDisplay_show(void *iptr) {
     _TNBUF[(_TNBUFLENGTH - 1)] = '\0';
 
     mdisplay_hlvf_FillRectangle(10, 45, _global_width - 20, 12, COLOR_WHITE);
-    // mdisplay_hlvf_DrawColorWheelString(10 - dx, 45, _TNBUF, 0.0, 1.0, 0.6, 0.3019607843, FONT_8X12, ALIGNMENT_LEFT);
-    mdisplay_hlvf_DrawColorWheelString(10 - dx, 45, _TNBUF, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_LEFT);
+    // mdisplay_hlvf_DrawColorWheelString(10 - dx, 45, _TNBUF, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_LEFT);
+    mdisplay_hlvf_DrawColorWheelStringFast(10 - dx, 45, _TNBUF, FONT_8X12, ALIGNMENT_LEFT);
     mdisplay_hlvf_FillRectangle(0, 45, 10, 12, COLOR_WHITE);
     mdisplay_hlvf_FillRectangle(_global_width - 10, 45, 10, 12, COLOR_WHITE);
   }

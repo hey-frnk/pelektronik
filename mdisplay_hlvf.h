@@ -33,7 +33,7 @@ void          mdisplay_hlvf_DrawChar(uint8_t x, uint8_t y, uint8_t chr, uint16_t
 void          mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint8_t fontSize, uint8_t alignment);
 // Draw string with color fade (this is damn lit). cStart/cEnd marks the color range (0 - 255), s and l the desired saturation or luminance respectively
 void          mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t cStart, uint8_t cEnd, uint8_t s, uint8_t l, uint8_t fontSize, uint8_t alignment);
-// void          mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, float cStart, float cEnd, float s, float l, uint8_t fontSize, uint8_t alignment);
+void          mdisplay_hlvf_DrawColorWheelStringFast(uint8_t x, uint8_t y, char *str, uint8_t fontSize, uint8_t alignment);
 
 // Draw shape
 void          mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color);
