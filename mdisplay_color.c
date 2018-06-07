@@ -12,10 +12,6 @@
   #include <stdint.h>
 #endif
 
-#define U8NORM    16
-#define FPSH      24
-
-
 inline uint16_t mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b){
   // Mapping goes like RRRRRGGGGGGBBBBB
   return ((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (b >> 3);
@@ -24,10 +20,6 @@ inline uint16_t mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b){
 static inline int32_t _mdisplay_fpmul(int32_t x, int32_t y){
   return ((int64_t)x * (int64_t)y) / 0x01000000;
 }
-
-/*static inline int32_t _mdisplay_fpdiv(int32_t x, int32_t y){
-  return ((int64_t)x * 0x01000000) / y;
-}*/
 
 static int32_t _mdisplay_hslp_hue2rgb(int32_t p, int32_t q, int32_t t){
   if(t < 0x00000000) t += 0x01000000;
@@ -53,10 +45,6 @@ uint16_t mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l){
     bFP = _mdisplay_hslp_hue2rgb(p, q, hFP - 0x00555555);
   }
 
-  //(_mdisplay_fpmul(0x3FC00000, rFP) >> 22);
-
-  // return mdisplay_rgb_to565((uint8_t)((rFP >> U8NORM) - 1), (uint8_t)((gFP >> U8NORM) - 1), (uint8_t)((bFP >> U8NORM) - 1));
-  // return mdisplay_rgb_to565((rFP / 16777216.0) * 255.0, (gFP / 16777216.0) * 255.0, (bFP / 16777216.0) * 255.0);
   return mdisplay_rgb_to565((_mdisplay_fpmul(0x3FC00000, rFP) >> 22), (_mdisplay_fpmul(0x3FC00000, gFP) >> 22), (_mdisplay_fpmul(0x3FC00000, bFP) >> 22));
 }
 

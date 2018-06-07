@@ -86,7 +86,7 @@ void TrackDisplay_show(void *iptr) {
     mdisplay_hlvf_DrawString(10 - dx, 60, _AABUF, COLOR_GRAY, FONT_5X7, ALIGNMENT_LEFT);
     mdisplay_hlvf_FillRectangle(0, 60, 10, 7, COLOR_WHITE);
     mdisplay_hlvf_FillRectangle(_global_width - 10, 60, 9, 7, COLOR_WHITE);
-    HAL_Delay(100);
+    // HAL_Delay(100);
   }
 
   free(_BUF0); free(_BUF1);

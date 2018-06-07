@@ -67,10 +67,10 @@ void mdisplay_hlvf_FillRectangle(uint8_t x, uint8_t y, uint8_t width, uint8_t he
 
 static inline void _mdisplay_hlvf_retrieveWidthHeight(uint8_t fontSize, uint8_t *fWidth, uint8_t *fHeight, uint8_t *xspPd, unsigned char **_cptr){
 	switch(fontSize){
-		case FONT_5X7: 		*fWidth = 5; 		*fHeight = 7; 	*xspPd = 1;		if(_cptr) *_cptr = (unsigned char *)Font5x7; 		break;
+		case FONT_5X7: 		*fWidth = 5; 		*fHeight = 7; 	*xspPd = 1;		if(_cptr) *_cptr = (unsigned char *)Font5x7;		break;
 		case FONT_8X12: 	*fWidth = 8; 		*fHeight = 12; 	*xspPd = 0;		if(_cptr) *_cptr = (unsigned char *)Font8x12; 	break;
 		case FONT_8X14: 	*fWidth = 8; 		*fHeight = 14; 	*xspPd = 1;		if(_cptr) *_cptr = (unsigned char *)Font8x14; 	break;
-		case FONT_12X16: 	*fWidth = 12; 	*fHeight = 16; 	*xspPd = 1;		if(_cptr) *_cptr = (unsigned char *)Font12x16; 	break;
+		case FONT_12X16: 	*fWidth = 12;		*fHeight = 16; 	*xspPd = 1;		if(_cptr) *_cptr = (unsigned char *)Font12x16; 	break;
 		// case 3: *fWidth = 16; *fHeight = 26; if(_cptr) *_cptr = (unsigned char *)Font16x26; break;
 	}
 }
@@ -176,9 +176,9 @@ static inline void _mdisplay_hlvf_retrieveIcon(uint8_t size, uint8_t *pixels, un
 		case NAV_FWD: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Fwd16x16; break;
 		case NAV_RWD: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Rwd16x16; break;
 		case NAV_SOUND: 	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Sound16x16; break;
-		case NAV_REPA: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Repeat16x16; break;
-		case NAV_REPO: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)RepeatOnce16x16; break;
-		case NAV_SHUFFLE: *pixels = 16; if(_cptr) *_cptr = (unsigned char *)Shuffle16x16; break;
+		case NAV_REPA:		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Repeat16x16; break;
+		case NAV_REPO:		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)RepeatOnce16x16; break;
+		case NAV_SHUFFLE:	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Shuffle16x16; break;
 	}
 }
 

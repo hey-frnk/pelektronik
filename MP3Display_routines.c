@@ -65,7 +65,7 @@ void _routine_BOOT(void){
   #endif
 
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
-  mdisplay_hlvf_DrawIcon(35, 47, RABBIT16, COLOR_GRAY);
+  mdisplay_hlvf_DrawIcon(35, 47, HEART16, COLOR_GRAY);
   mdisplay_hlvf_DrawString(56, 48, "welcome.", COLOR_GRAY, FONT_8X14, ALIGNMENT_LEFT);
   // mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, "(C) by #CreateWithVFDCo", 0.7843137255, 1.0, 1.0, 0.5, FONT_5X7, ALIGNMENT_CENTER);
   mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, "(C) by #CreateWithVFDCo", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
