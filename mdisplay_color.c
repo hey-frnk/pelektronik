@@ -51,7 +51,7 @@ uint16_t mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l){
 
 // LEGACY FUNCTIONS
 
-/*static float _mdisplay_hsl_hue2rgb(float p, float q, float t){
+static float _mdisplay_hslT_hue2rgb(float p, float q, float t){
   if(t < 0.0) t += 1;
   if(t > 1.0) t -= 1;
   if(t < 0.16666666667f) return p + (q - p) * 6.0f * t;
@@ -60,7 +60,7 @@ uint16_t mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l){
   return p;
 }
 
-uint16_t mdisplay_hsl_to565(uint8_t hue, uint8_t sat, uint8_t lum){
+uint16_t mdisplay_hslT_to565(uint8_t hue, uint8_t sat, uint8_t lum){
   // https://stackoverflow.com/questions/2353211
   float h = hue / 255.0;
   float s = sat / 255.0;
@@ -72,12 +72,12 @@ uint16_t mdisplay_hsl_to565(uint8_t hue, uint8_t sat, uint8_t lum){
   } else{
       float q = l < 0.5f ? l * (1.0f + s) : l + s - l * s;
       float p = 2.0f * l - q;
-      r = _mdisplay_hsl_hue2rgb(p, q, h + 0.333333333333f);
-      g = _mdisplay_hsl_hue2rgb(p, q, h);
-      b = _mdisplay_hsl_hue2rgb(p, q, h - 0.333333333333f);
+      r = _mdisplay_hslT_hue2rgb(p, q, h + 0.333333333333f);
+      g = _mdisplay_hslT_hue2rgb(p, q, h);
+      b = _mdisplay_hslT_hue2rgb(p, q, h - 0.333333333333f);
   }
   return mdisplay_rgb_to565(255.0 * r, 255.0 * g, 255.0 * b);
-}*/
+}
 
 /*uint16_t mdisplay_hslf_to565(float h, float s, float l){
   float r, g, b;

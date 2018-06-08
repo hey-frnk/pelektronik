@@ -39,8 +39,8 @@ extern "C" {
 extern uint16_t       mdisplay_rgb_to565(uint8_t r, uint8_t g, uint8_t b);
 
 // True HSL (hue, saturation, luminance) to RGB 565 color space transform. All colors are beautiful
-uint16_t              mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l);  // h, s, l: [0, 255]
-// uint16_t              mdisplay_hslp_to565(uint8_t h, uint8_t s, uint8_t l); // Fixed point arithmetics
+uint16_t              mdisplay_hsl_to565(uint8_t h, uint8_t s, uint8_t l);  // h, s, l: [0, 255], fixed point arithmetics
+uint16_t              mdisplay_hslT_to565(uint8_t h, uint8_t s, uint8_t l); // damn slow but accurate floating point
 // uint16_t              mdisplay_hslf_to565(float h, float s, float l);       // h, s, l: [0, 1] (faster)
 
 

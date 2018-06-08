@@ -51,7 +51,7 @@ int main(int argc, char** argv){
   // mdisplay_hlvf_DrawColorWheelString(2, 41, str1, 151, 250, 153, 77, 2);
   // mdisplay_hlvf_DrawString(2, 90, str2, COLOR_GRAYBLUE, 3);
 
-  for(uint16_t i = 0; i < 256; ++i) printf("0x%hx, ", mdisplay_hsl_to565(i, 153, 77));
+  // for(uint16_t i = 0; i < 256; ++i) printf("0x%hx, ", mdisplay_hsl_to565(i, 153, 77));
 
   mdisplay_hlvf_DrawIcon(0, 60, HEART24, COLOR_RED);
   mdisplay_hlvf_DrawIcon(26, 60, HEART16, COLOR_RED);

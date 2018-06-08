@@ -119,7 +119,7 @@ void TrackDisplay_changeMode(TrackDisplay *iptr, uint8_t mode){
   iptr->mode = mode;
   // Shuffle Status
   switch(mode){
-    case TRACKDISPLAY_MODE_NONE:      mdisplay_hlvf_FillRectangle(115, 1, 16, 16, COLOR_WHITE);     break;    // Blank this
+    case TRACKDISPLAY_MODE_NONE:      mdisplay_hlvf_FillRectangle(115, 1, 16, 16, COLOR_WHITE);        break;    // Blank this
     case TRACKDISPLAY_MODE_SHUFFLE:   mdisplay_hlvf_DrawIcon(115, 1, NAV_SHUFFLE, 0xe73c);          break;
     case TRACKDISPLAY_MODE_REPEATALL: mdisplay_hlvf_DrawIcon(115, 1, NAV_REPA, 0xe73c);             break;
     case TRACKDISPLAY_MODE_REPEATONE: mdisplay_hlvf_DrawIcon(115, 1, NAV_REPO, 0xe73c);             break;

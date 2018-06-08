@@ -149,7 +149,7 @@ void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, u
 	}
 
 	// _x, _y are local backups of X and Y
-	uint8_t _x = x, _y = y;
+	uint8_t _x = x; // _y = y;
 
 	while (*str) {
 		mdisplay_hlvf_DrawChar(x, y, *str++, color, fontSize);
@@ -158,7 +158,7 @@ void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, u
 		// Word wrap
 		else if (y < _global_height - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
 		// Reset otherwise
-		else {x =_x; y =_y;}
+		else {x =_x;} //y =_y;}
 	}
 }
 
@@ -180,7 +180,7 @@ void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t
 	}
 
 	// _x, _y are local backups of X and Y
-	uint8_t _x = x, _y = y;
+	uint8_t _x = x; // _y = y;
 
 	// And draw!
 	while (*str){
@@ -190,7 +190,7 @@ void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t
 		// Word wrap
 		else if (y < _global_height - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
 		// Reset otherwise
-		else {x =_x; y =_y;}
+		else {x =_x;} // y =_y;}
 	}
 }
 
@@ -210,7 +210,7 @@ void mdisplay_hlvf_DrawColorWheelStringFast(uint8_t x, uint8_t y, char *str, uin
 	}
 
 	// _x, _y are local backups of X and Y
-	uint8_t _x = x, _y = y;
+	uint8_t _x = x; // _y = y;
 
 	// And draw!
 	while (*str){
@@ -220,7 +220,7 @@ void mdisplay_hlvf_DrawColorWheelStringFast(uint8_t x, uint8_t y, char *str, uin
 		// Word wrap
 		else if (y < _global_height - ((fHeight + 1) << 1)) {x =_x; y += (fHeight + 1);}
 		// Reset otherwise
-		else {x =_x; y =_y;}
+		else {x =_x;} // y =_y;}
 	}
 }
 
@@ -254,22 +254,38 @@ void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color){
 	uint8_t b = 8.2258064516129032258f * (color & 0b00011111);
 	uint8_t max = r > g ? (r > b ? r : b) : (g > b ? g : b);
 	uint8_t min = r < g ? (r < b ? r : b) : (g < b ? g : b);
-	float _r = r / 255.0, _g = g / 255.0, _b = b / 255.0;
-	float _max = max / 255.0, _min = min / 255.0;
-	float h, s, l = 0.5 * (_max + _min);
+	float _r = r / 255.0f, _g = g / 255.0f, _b = b / 255.0f;
+	float _max = max / 255.0f, _min = min / 255.0f;
+	float h, s, l = 0.5f * (_max + _min);
 	if(max == min) {h = 0; s = 0;}
 	else{
 		float d = _max - _min;
-		s = l > 0.5 ? d / (2.0 - _max - _min) : d / (_max + _min);
-		if(max == r) h = (_g - _b) / d + (_g < _b ? 6.0 : 0.0);
-		else if(max == g) h = (_b - _r) / d + 2.0;
-		else if(max == b) h = (_r - _g) / d + 4.0;
+		s = l > 0.5f ? d / (2.0f - _max - _min) : d / (_max + _min);
+		if(max == r) h = (_g - _b) / d + (_g < _b ? 6.0f : 0.0f);
+		else if(max == g) h = (_b - _r) / d + 2.0f;
+		else if(max == b) h = (_r - _g) / d + 4.0f;
 	}
-	// End of internal HSL transform
+
+	// Normalize brightness
+	uint8_t crmin = _cptr[0], crmax = _cptr[0];
+	for(uint16_t i = 0; i < pxl * pxl; ++i){
+		if(_cptr[i] < crmin) crmin = _cptr[i];
+		if(_cptr[i] > crmax) crmax = _cptr[i];
+	}
+	
+	// Calculate new (linearized) color mapping
+	uint8_t t = 0;
+	switch(color){
+		case COLOR_BLACK: 	t = 0; 		break;
+		default:						t = 127; 	break;
+	}
+	int16_t _t = (int16_t)t;
+	float m = (_t - crmax) / (float)(crmin - crmax);
+	float n = (crmax * (_t - crmin)) / (float)(crmax - crmin);
 
 	for(uint8_t i = 0; i < pxl; ++i)
 		for(uint8_t j = 0; j < pxl; ++j)
-			st7735_WritePixel(x + j, y + i, mdisplay_hsl_to565(h * 42.5, s * 255.0, _cptr[pxl * i + j]));
+			st7735_WritePixel(x + j, y + i, mdisplay_hsl_to565(h * 42.5, s * 255.0, m * (float)(_cptr[pxl * i + j]) + n));
 
 }
 

@@ -55,14 +55,10 @@ void (* MP3DisplayState_Routine[])(void) = { _routine_BOOT,        // Correspond
                                               _routine_RECORD, _routine_SLEEP,
                                               _routine_SHUTDOWN };
 
-const uint32_t menuElementCount = 4;
-const char* menuElements[menuElementCount] = { "Now Playing",
-                                "Shuffle All",
-                                "Record Voice",
-                                "Settings" };
-const uint8_t menuElementIconArray[menuElementCount] = {
-  NAV_PLAY, HEART16, RABBIT16, NAV_PAUSE
-};
+const uint32_t menuElementCount = 9;
+const char* menuElements[menuElementCount] = {"Now Playing", "Shuffle All", "Record Voice", "Settings", "RandomCrap", "RandomCrap2", "RandomCrap3", "RandomCrap4", "RandomCrap5"};
+const uint8_t menuElementIconArray[menuElementCount] = {NAV_PLAY, HEART16, RABBIT16, NAV_PAUSE, NAV_SHUFFLE, NAV_FWD, NAV_RWD, NAV_REPA, NAV_SOUND};
+const uint16_t menuElementColorArray[menuElementCount] = {COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_GREEN, COLOR_BLACK, COLOR_BLACK, COLOR_BLACK, COLOR_CYAN, COLOR_BROWN};
 
 Track* currentTrack = NULL;
 
@@ -176,7 +172,7 @@ void _routine_MAINMENU(void){
     MenuDisplay_init(INSTANCE_MenuDISPLAY);
     INSTANCE_Active = (MP3Display *)INSTANCE_MenuDISPLAY;
 
-    INSTANCE_MenuDISPLAY->updateItems(INSTANCE_MenuDISPLAY, (char **)menuElements, (uint8_t *)menuElementIconArray, menuElementCount);
+    INSTANCE_MenuDISPLAY->updateItems(INSTANCE_MenuDISPLAY, (char **)menuElements, (uint8_t *)menuElementIconArray, (uint16_t *)menuElementColorArray, menuElementCount);
   }
 
   if(INSTANCE_MenuDISPLAY != NULL){
