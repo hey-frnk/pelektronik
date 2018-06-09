@@ -16,7 +16,7 @@ typedef struct MenuDisplay {
 
   uint8_t                   *itemIconArray;
   uint16_t                  *itemColorArray;
-  uint32_t                  itemPos, itemArraySize;
+  uint32_t                  itemPos, itemArraySize, prevPos;
   char                      **itemArray;
 } MenuDisplay;
 

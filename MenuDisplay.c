@@ -29,6 +29,7 @@ void MenuDisplay_show(void *iptr) {
   // Draw horizontal menu element lines
   uint32_t _itemPos = tptr->itemPos;
   uint32_t _iStart = (_itemPos < 5) ? 0 : tptr->itemPos - 4;
+  uint32_t _iMax = (tptr->itemArraySize > 4) ? 5 : tptr->itemArraySize;
 
   uint8_t enableScrollBar = tptr->itemArraySize > 5;
   if(enableScrollBar){
@@ -42,7 +43,7 @@ void MenuDisplay_show(void *iptr) {
   }
 
   // Draw menu elements
-  for(uint32_t i = _iStart; i < 5 + _iStart; ++i){
+  for(uint32_t i = _iStart; i < _iMax + _iStart; ++i){
     uint32_t _iStartOffset = (i - _iStart) * DISTANCEMULTIPLIER;
     if(40 + _iStartOffset < _global_height){
       #ifdef DEBUG
@@ -55,6 +56,7 @@ void MenuDisplay_show(void *iptr) {
     if(i == tptr->itemPos){ // Focus!
       mdisplay_hlvf_DrawColorWheelStringFast(25, TOPBAROFFSET + 5 + _iStartOffset, tptr->itemArray[i], FONT_8X12, ALIGNMENT_LEFT);
       mdisplay_hlvf_DrawIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], tptr->itemColorArray[i]);
+      mdisplay_hlvf_DrawChar(140, TOPBAROFFSET + 5 + _iStartOffset, '>', COLOR_GRAY, FONT_8X12);
     }
     else{ // Defocus!
       mdisplay_hlvf_DrawString(25, TOPBAROFFSET + 5 + _iStartOffset, tptr->itemArray[i], COLOR_GRAY, FONT_8X12, ALIGNMENT_LEFT);

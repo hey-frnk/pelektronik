@@ -239,6 +239,8 @@ static inline void _mdisplay_hlvf_retrieveIcon(uint8_t size, uint8_t *pixels, un
 		case NAV_REPA:		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Repeat16x16; break;
 		case NAV_REPO:		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)RepeatOnce16x16; break;
 		case NAV_SHUFFLE:	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Shuffle16x16; break;
+		case NAV_RECORD:	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Record16x16; break;
+		case NAV_SETTINGS:*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Settings16x16; break;
 	}
 }
 
@@ -272,13 +274,15 @@ void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color){
 		if(_cptr[i] < crmin) crmin = _cptr[i];
 		if(_cptr[i] > crmax) crmax = _cptr[i];
 	}
-	
+
 	// Calculate new (linearized) color mapping
 	uint8_t t = 0;
 	switch(color){
 		case COLOR_BLACK: 	t = 0; 		break;
+		case 0x1987: 				t = 64; 	break;
 		default:						t = 127; 	break;
 	}
+
 	int16_t _t = (int16_t)t;
 	float m = (_t - crmax) / (float)(crmin - crmax);
 	float n = (crmax * (_t - crmin)) / (float)(crmax - crmin);
