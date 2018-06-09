@@ -55,10 +55,10 @@ void (* MP3DisplayState_Routine[])(void) = { _routine_BOOT,        // Correspond
                                               _routine_RECORD, _routine_SLEEP,
                                               _routine_SHUTDOWN };
 
-const uint32_t menuElementCount = 5;
-const char* menuElements[menuElementCount] = {"Now Playing", "Shuffle All", "Record Voice", "Settings", "RandomCrap"};
-const uint8_t menuElementIconArray[menuElementCount] = {NAV_PLAY, HEART16, NAV_RECORD, NAV_SETTINGS, NAV_SHUFFLE};
-const uint16_t menuElementColorArray[menuElementCount] = {COLOR_BLACK, COLOR_RED, COLOR_BLACK, 0x1987, COLOR_BLACK};
+const uint32_t menuElementCount = 6;
+const char* menuElements[menuElementCount] = {"Now Playing", "Shuffle All", "Record Voice", "Settings", "Backlight Off", "Shut Down"};
+const uint8_t menuElementIconArray[menuElementCount] = {NAV_PLAY, HEART16, NAV_RECORD, NAV_SETTINGS, NAV_SLEEP, NAV_SHDN};
+const uint16_t menuElementColorArray[menuElementCount] = {COLOR_BLACK, COLOR_RED, COLOR_BLACK, 0x1987, COLOR_YELLOW, COLOR_BRRED};
 
 Track* currentTrack = NULL;
 

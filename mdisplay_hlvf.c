@@ -241,6 +241,8 @@ static inline void _mdisplay_hlvf_retrieveIcon(uint8_t size, uint8_t *pixels, un
 		case NAV_SHUFFLE:	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Shuffle16x16; break;
 		case NAV_RECORD:	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Record16x16; break;
 		case NAV_SETTINGS:*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Settings16x16; break;
+		case NAV_SLEEP: 	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Sleep16x16; break;
+		case NAV_SHDN: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Shutdown16x16; break;
 	}
 }
 
@@ -279,6 +281,7 @@ void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color){
 	uint8_t t = 0;
 	switch(color){
 		case COLOR_BLACK: 	t = 0; 		break;
+		case COLOR_BRRED:		t = 64; 	break;
 		case 0x1987: 				t = 64; 	break;
 		default:						t = 127; 	break;
 	}
