@@ -7,21 +7,31 @@ extern "C" {
 #ifndef MP3DI_H
 #define MP3DI_H
 
-typedef struct Track{
-  char* trackName;
-  char* artistName;
-  char* albumName;
-  uint32_t length;
+typedef struct Track{       // A track has
+  char *fileName;           // a file name
+  char *trackName;          // a song track name
+  char *artistName;         // an artist
+  char *albumName;          // and belongs to an album
+  uint32_t length;          // length is the total track length in seconds
 } Track;
 
-typedef struct TrackList{
-  Track* track;
-  struct strList* next;
+typedef struct TrackList{   // A track list is an array of tracks
+  Track **list;             // This is the array itself
+  uint32_t size;            // The size tells how many items are in here
 } TrackList;
 
 
-// This functions requests a list of tracks in a linked list
-TrackList* MP3DI_requestTrackList(void);
+// This functions returns an empty track list
+TrackList* MP3DI_initTrackList(void);
+
+// Add new song to track list
+void MP3DI_TrackList_add(TrackList* list, Track *track);
+
+// Clear track list
+void MP3DI_TrackList_clear(TrackList *list);
+
+// Retrieve track
+Track* MP3DI_TrackList_retrieveTrack(TrackList *list, uint32_t pos);
 
 
 // Play Track
