@@ -7,6 +7,9 @@ extern "C" {
 #ifndef MP3DI_H
 #define MP3DI_H
 
+#include <stdint.h>
+#include "SDI.h"
+
 typedef struct Track{       // A track has
   char *fileName;           // a file name
   char *trackName;          // a song track name
@@ -21,17 +24,14 @@ typedef struct TrackList{   // A track list is an array of tracks
 } TrackList;
 
 
-// This functions returns an empty track list
-TrackList* MP3DI_initTrackList(void);
+// This functions returns a song list upon a given file list
+TrackList* MP3DI_initTrackListFromFileList(SD_FILE_LIST *list);
 
-// Add new song to track list
-void MP3DI_TrackList_add(TrackList* list, Track *track);
-
-// Clear track list
-void MP3DI_TrackList_clear(TrackList *list);
+// Free track list
+void MP3DI_TrackList_free(TrackList *list);
 
 // Retrieve track
-Track* MP3DI_TrackList_retrieveTrack(TrackList *list, uint32_t pos);
+Track* MP3DI_TrackList_retrieveTrack(TrackList *l, uint32_t pos);
 
 
 // Play Track

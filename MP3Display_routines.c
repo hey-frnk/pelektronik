@@ -34,6 +34,7 @@
 #include "font.h"
 
 #include "MP3Display.h"
+#include "SDI.h"
 #include "MP3DI.h"
 #include "TrackDisplay.h"
 #include "MenuDisplay.h"
@@ -74,16 +75,14 @@ void _routine_BOOT(void){
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
   mdisplay_hlvf_DrawIcon(35, 47, HEART16, COLOR_GRAY);
   mdisplay_hlvf_DrawString(56, 48, (char *)"welcome.", COLOR_GRAY, FONT_8X14, ALIGNMENT_LEFT);
-  mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, (char*)"(C) by #CreateWithVFDCo", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
+  mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, (char*)"(C) by Kathi", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
 
-  currentTrack = (Track *)malloc(sizeof(Track));
-  static char trackName[] = "Technicolour Beat - Single";
-  static char artistName[] = "Oh Wonder";
-  static char albumName[] = "Technicolour Beat [Single]";
-  currentTrack->trackName = trackName;
-  currentTrack->artistName = artistName;
-  currentTrack->albumName = albumName;
-  currentTrack->length = 179;
+  // Get MP3 Directory
+  SD_FILE_LIST *l = SDI_getFileListFromDirectory("/");
+  TrackList *tl = MP3DI_initTrackListFromFileList(l);
+  SDI_free(l);
+
+  currentTrack = MP3DI_TrackList_retrieveTrack(tl, 1);
 
   #ifdef DEBUG
     transpose(_crObj);

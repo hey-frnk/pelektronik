@@ -30,8 +30,13 @@ SD_FILE_LIST* SDI_getFileListFromDirectory(char *dir){
   file4->SD_FILE_NAME = "somecode.cpp";
   file4->SD_FILE_SIZE = 5555; // (0.06 MB)
 
+  SD_FILE* file5 = malloc(sizeof(SD_FILE));
+  file5->SD_FILE_TYPE = TYPE_MP3FILE;
+  file5->SD_FILE_NAME = "whiteblood.mp3";
+  file5->SD_FILE_SIZE = 9837837; // (9.84 MB)
+
   // Create new list
-  uint32_t _size = 4;
+  uint32_t _size = 5;
   newList->FILE_LIST_SIZE = _size;
   newList->FILE_LIST = (SD_FILE **)malloc(newList->FILE_LIST_SIZE * sizeof(SD_FILE *));
 
@@ -39,6 +44,7 @@ SD_FILE_LIST* SDI_getFileListFromDirectory(char *dir){
   newList->FILE_LIST[1] = file2;
   newList->FILE_LIST[2] = file3;
   newList->FILE_LIST[3] = file4;
+  newList->FILE_LIST[4] = file5;
   #endif
 
   return newList;
@@ -47,5 +53,7 @@ SD_FILE_LIST* SDI_getFileListFromDirectory(char *dir){
 
 // Free the allocated memory
 void SDI_free(SD_FILE_LIST *list){
-  // Do nothing.
+  for(uint32_t i = 0; i < list->FILE_LIST_SIZE; ++i) free(list->FILE_LIST[i]);
+  free(list->FILE_LIST);
+  free(list);
 }
