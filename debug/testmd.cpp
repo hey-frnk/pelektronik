@@ -72,12 +72,21 @@ int main(int argc, char** argv){
   }
 
   string fileName = argv[1];
+  string streamType = argv[2];
 
-  hImage* renderT = new hImage("../bitmap/" + fileName);
-  cout << "static unsigned char const 16x16[] = {" << endl;
-  renderT->toBitStream();
-  cout << "};" << endl;
-  delete renderT;
+  if(streamType == "gray") {
+    hImage* renderT = new hImage("../bitmap/" + fileName);
+    cout << "static unsigned char const 16x16[] = {" << endl;
+    renderT->toBitStream();
+    cout << "};" << endl;
+    delete renderT;
+  } else if(streamType == "color") {
+    hImage* renderT = new hImage("../bitmap/" + fileName);
+    cout << "static uint16_t const 16x16[] = {" << endl;
+    renderT->to565();
+    cout << "};" << endl;
+    delete renderT;
+  }
 
 
   /*uint8_t _cptr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};

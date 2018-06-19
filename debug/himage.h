@@ -25,6 +25,7 @@ public:
   uint32_t getHeight();
   uint8_t getPixel(uint32_t, uint32_t, uint8_t);
   void toBitStream();
+  void to565();
   void setPixel(uint32_t, uint32_t, uint8_t, uint8_t);
   void setPixelRGB(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
   void setBWPixel(uint32_t, uint32_t, uint8_t);

@@ -45,6 +45,7 @@ MP3Display* INSTANCE_Active = NULL;
 
 // Possible allocated instances
 TrackDisplay* INSTANCE_TrackDISPLAY = NULL;
+MenuDisplay* INSTANCE_TrackListDISPLAY = NULL;
 MenuDisplay* INSTANCE_MenuDISPLAY = NULL;
 
 // Current state variable
@@ -57,9 +58,9 @@ void (* MP3DisplayState_Routine[])(void) = { _routine_BOOT,        // Correspond
                                               _routine_SHUTDOWN };
 
 const uint32_t menuElementCount = 6;
-const char* menuElements[menuElementCount] = {"Now Playing", "Shuffle All", "Record Voice", "Settings", "Backlight Off", "Shut Down"};
-const uint8_t menuElementIconArray[menuElementCount] = {NAV_PLAY, HEART16, NAV_RECORD, NAV_SETTINGS, NAV_SLEEP, NAV_SHDN};
-const uint16_t menuElementColorArray[menuElementCount] = {COLOR_BLACK, COLOR_RED, COLOR_BLACK, 0x1987, COLOR_YELLOW, COLOR_BRRED};
+const char* menuElements[6] = {"Now Playing", "Shuffle All", "Record Voice", "Settings", "Backlight Off", "Shut Down"};
+const uint8_t menuElementIconArray[6] = {NAV_PLAY, HEART16, NAV_RECORD, NAV_SETTINGS, NAV_SLEEP, NAV_SHDN};
+const uint16_t menuElementColorArray[6] = {COLOR_BLACK, COLOR_RED, COLOR_BLACK, 0x1987, COLOR_YELLOW, COLOR_BRRED};
 
 Track* currentTrack = NULL;
 
@@ -67,22 +68,26 @@ void _routine_BOOT(void){
   #ifdef DEBUG
   _crObj = new hImage(160, 160, "output.bmp");
   #else
-  st7735_Init();				// Initialize Display
+  // Initialize Display
+  st7735_Init();
   st7735_DisplayOn();
   st7735_setRotation(1);
+
+  // Initialize SD Interface
+  SDI_Init();
   #endif
 
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
   mdisplay_hlvf_DrawIcon(35, 47, HEART16, COLOR_GRAY);
   mdisplay_hlvf_DrawString(56, 48, (char *)"welcome.", COLOR_GRAY, FONT_8X14, ALIGNMENT_LEFT);
-  mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, (char*)"(C) by Kathi", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
+  mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, (char*)"(C) by LuiseKathiFrank", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
 
   // Get MP3 Directory
-  SD_FILE_LIST *l = SDI_getFileListFromDirectory("/");
-  TrackList *tl = MP3DI_initTrackListFromFileList(l);
-  SDI_free(l);
+  // SD_FILE_LIST *l = SDI_getFileListFromDirectory("/");
+  // TrackList *tl = MP3DI_initTrackListFromFileList(l);
+  // SDI_free(l);
 
-  currentTrack = MP3DI_TrackList_retrieveTrack(tl, 1);
+  // currentTrack = MP3DI_TrackList_retrieveTrack(tl, 1);
 
   #ifdef DEBUG
     transpose(_crObj);
@@ -98,23 +103,27 @@ void _routine_BOOT(void){
     cin >> ws;
     cin >> c;
 
-    if(c == 'e') exit(0);
-    else if(c == 'm'){
+    if(c == 'm') {
       printf("Entering next state (MENU)\n");
       MP3Display_State nextState = MP3DISPLAYSTATE_MAINMENU;
       mp3display_state = nextState;
       (*MP3DisplayState_Routine[nextState])();
-    } else {
+    } else if(c == 'p') {
       printf("Entering next state (PLAY)\n");
       MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
       mp3display_state = nextState;
       (*MP3DisplayState_Routine[nextState])();
-    }
+    } else if(c == 'f') {
+      printf("Entering next state (TRACK_FS_LIST)\n");
+      MP3Display_State nextState = MP3DISPLAYSTATE_TRACKLIST;
+      mp3display_state = nextState;
+      (*MP3DisplayState_Routine[nextState])();
+    } else exit(0);
   #else
     HAL_Delay(2000);
 
     printf("Boot Successful. Entering next state (PLAY)\n");
-    MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
+    MP3Display_State nextState = MP3DISPLAYSTATE_TRACKLIST;
     mp3display_state = nextState;
     (*MP3DisplayState_Routine[nextState])();
   #endif
@@ -161,7 +170,70 @@ void _routine_PLAY(void){
 }
 
 void _routine_TRACKLIST(void){
-  printf("Hello3\n");
+  // Check for track list menu instance availability
+  if(INSTANCE_TrackListDISPLAY == NULL){
+    INSTANCE_TrackListDISPLAY = (MenuDisplay *)malloc(sizeof(MenuDisplay));
+    MenuDisplay_init(INSTANCE_TrackListDISPLAY);
+    INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
+
+    // Retrieve current directory
+    SD_FILE_LIST *l = SDI_getFileListFromDirectory(NULL);
+    uint32_t _l_size = l->FILE_LIST_SIZE;
+    uint8_t *_iconArr = (uint8_t *)malloc(_l_size * sizeof(uint8_t));
+    uint16_t *_colorArr = (uint16_t *)malloc(_l_size * sizeof(uint16_t));
+    char **_fNameArr = (char **)malloc(_l_size * sizeof(char *));
+
+    // Icon array
+    for(uint32_t i = 0; i < _l_size; ++i) {
+      switch(l->FILE_LIST[i]->SD_FILE_TYPE) {
+        case TYPE_MP3FILE:    _iconArr[i] = FS_MUSIC;   break;
+        case TYPE_BMPIMAGE:   _iconArr[i] = FS_BITMAP;  break;
+        case TYPE_DIRECTORY:  _iconArr[i] = FS_DIR;     break;
+        default:              _iconArr[i] = FS_UNKNOWN; break;
+      }
+      _colorArr[i] = COLOR_WHITE;   // We want spacious (wasteful), beautiful icons this time
+      _fNameArr[i] = l->FILE_LIST[i]->SD_FILE_NAME;
+    }
+
+    INSTANCE_TrackListDISPLAY->updateItems(INSTANCE_TrackListDISPLAY, _fNameArr, _iconArr, _colorArr, _l_size);
+  }
+
+  if(INSTANCE_TrackListDISPLAY != NULL) {
+    INSTANCE_TrackListDISPLAY->super.show(INSTANCE_TrackListDISPLAY);
+    INSTANCE_TrackListDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackListDISPLAY, 2);
+    mtime t = {12, 13, 02};
+    INSTANCE_TrackListDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackListDISPLAY, t);
+  }
+
+  #ifdef DEBUG
+    transpose(_crObj);
+    stringstream s;
+    s << "FSM_" << (int)mp3display_state << ".bmp";
+    _crObj -> setFileName(s.str());
+    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
+    transpose(_crObj);
+
+    printf("%d\n", (int)mp3display_state);
+    // Read next state
+    char c = 0;
+    cout << "Main menu. What to do next? (u: up, d: down, p: play): ";
+    cin >> ws;
+    cin >> c;
+
+    if(c == 'e') exit(0);
+    else if(c == 'u'){
+      printf("Menu up pressed\n");
+      INSTANCE_TrackListDISPLAY->itemUp(INSTANCE_TrackListDISPLAY);
+    } else if(c == 'd'){
+      printf("Menu down pressed\n");
+      INSTANCE_TrackListDISPLAY->itemDown(INSTANCE_TrackListDISPLAY);
+    } else if(c == 'p'){
+      printf("Entering next state (PLAY)\n");
+      MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
+      mp3display_state = nextState;
+      (*MP3DisplayState_Routine[nextState])();
+    }
+  #endif
 }
 
 void _routine_MAINMENU(void){

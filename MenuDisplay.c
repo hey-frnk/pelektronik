@@ -55,12 +55,17 @@ void MenuDisplay_show(void *iptr) {
 
     if(i == tptr->itemPos){ // Focus!
       mdisplay_hlvf_DrawColorWheelStringFast(25, TOPBAROFFSET + 5 + _iStartOffset, tptr->itemArray[i], FONT_8X12, ALIGNMENT_LEFT);
-      mdisplay_hlvf_DrawIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], tptr->itemColorArray[i]);
+      // Draw advanced color icon?
+      if(tptr->itemColorArray[i] == COLOR_WHITE) mdisplay_hlvf_DrawColorIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], 0);
+      else mdisplay_hlvf_DrawIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], tptr->itemColorArray[i]);
+
       mdisplay_hlvf_DrawChar(140, TOPBAROFFSET + 5 + _iStartOffset, '>', COLOR_GRAY, FONT_8X12);
     }
     else{ // Defocus!
       mdisplay_hlvf_DrawString(25, TOPBAROFFSET + 5 + _iStartOffset, tptr->itemArray[i], COLOR_GRAY, FONT_8X12, ALIGNMENT_LEFT);
-      mdisplay_hlvf_DrawIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], COLOR_GRAY);
+
+      if(tptr->itemColorArray[i] == COLOR_WHITE) mdisplay_hlvf_DrawColorIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], 1);
+      else mdisplay_hlvf_DrawIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], COLOR_GRAY);
     }
   }
 

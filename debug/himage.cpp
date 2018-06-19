@@ -59,6 +59,16 @@ void hImage::toBitStream(){
   }
 }
 
+void hImage::to565(){
+  for(int i = 0; i < width; ++i){
+    for(int j = 0; j < height; ++j){
+      uint16_t cV = (uint16_t)(   ((getPixel(i, j, RED) & 0b11111000) << 8)     |     ((getPixel(i, j, GREEN) & 0b11111100) << 3)     |     ((getPixel(i, j, BLUE)) >> 3)   );
+      printf("0x%hx, ", cV);
+    }
+    printf("\n");
+  }
+}
+
 void hImage::setPixel(uint32_t x, uint32_t y, uint8_t value, uint8_t colorOffset){
   imageData[(3 * x * width) + (3 * y) + colorOffset] = value;
 }

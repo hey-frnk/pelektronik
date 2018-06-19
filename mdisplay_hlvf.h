@@ -37,6 +37,7 @@ void          mdisplay_hlvf_DrawColorWheelStringFast(uint8_t x, uint8_t y, char 
 
 // Draw shape
 void          mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color);
+void 					mdisplay_hlvf_DrawColorIcon(uint8_t x, uint8_t y, uint8_t instance, uint8_t grayFlag);
 
 #endif /* MDISPLAY_HLVF_H_ */
 

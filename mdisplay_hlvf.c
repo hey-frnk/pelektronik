@@ -5,6 +5,7 @@
  *      Author: Frank Zheng
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "mdisplay_hlvf.h"
@@ -246,12 +247,16 @@ static inline void _mdisplay_hlvf_retrieveIcon(uint8_t size, uint8_t *pixels, un
 	}
 }
 
-// Draw shape
-void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color){
-	uint8_t pxl = 24;
-	unsigned char *_cptr;
-	_mdisplay_hlvf_retrieveIcon(size, &pxl, &_cptr);
+static inline void _mdisplay_hlvf_retrieveColorIcon(uint8_t instance, uint8_t *pixels, uint16_t **_cptr){
+	switch(instance){
+		case FS_MUSIC: 		*pixels = 16; if(_cptr) *_cptr = (uint16_t *)Music16x16; break;
+		case FS_BITMAP: 	*pixels = 16; if(_cptr) *_cptr = (uint16_t *)Bitmap16x16; break;
+		case FS_DIR: 			*pixels = 16; if(_cptr) *_cptr = (uint16_t *)Folder16x16; break;
+		case FS_UNKNOWN: 	*pixels = 16; if(_cptr) *_cptr = (uint16_t *)Unknown16x16; break;
+	}
+}
 
+static void _mdisplay_colorNormalize(unsigned char *_cptr, uint16_t color, uint8_t pxl, float *h, float *s, float *l, float *m, float *n) {
 	// Retrieve RGB value, find max, min. Begin of internal HSL transform
 	uint8_t r = 8.2258064516129032258f * (color >> 11);
 	uint8_t g = 4.0476190476190476190f * ((color >> 5) & 0b00111111);
@@ -260,14 +265,14 @@ void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color){
 	uint8_t min = r < g ? (r < b ? r : b) : (g < b ? g : b);
 	float _r = r / 255.0f, _g = g / 255.0f, _b = b / 255.0f;
 	float _max = max / 255.0f, _min = min / 255.0f;
-	float h, s, l = 0.5f * (_max + _min);
-	if(max == min) {h = 0; s = 0;}
+	*l = 0.5f * (_max + _min);
+	if(max == min) {*h = 0; *s = 0;}
 	else{
 		float d = _max - _min;
-		s = l > 0.5f ? d / (2.0f - _max - _min) : d / (_max + _min);
-		if(max == r) h = (_g - _b) / d + (_g < _b ? 6.0f : 0.0f);
-		else if(max == g) h = (_b - _r) / d + 2.0f;
-		else if(max == b) h = (_r - _g) / d + 4.0f;
+		*s = *l > 0.5f ? d / (2.0f - _max - _min) : d / (_max + _min);
+		if(max == r) *h = (_g - _b) / d + (_g < _b ? 6.0f : 0.0f);
+		else if(max == g) *h = (_b - _r) / d + 2.0f;
+		else if(max == b) *h = (_r - _g) / d + 4.0f;
 	}
 
 	// Normalize brightness
@@ -287,8 +292,18 @@ void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color){
 	}
 
 	int16_t _t = (int16_t)t;
-	float m = (_t - crmax) / (float)(crmin - crmax);
-	float n = (crmax * (_t - crmin)) / (float)(crmax - crmin);
+	*m = (_t - crmax) / (float)(crmin - crmax);
+	*n = (crmax * (_t - crmin)) / (float)(crmax - crmin);
+}
+
+// Draw shape
+void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color) {
+	uint8_t pxl = 24;
+	unsigned char *_cptr;
+	_mdisplay_hlvf_retrieveIcon(size, &pxl, &_cptr);
+
+	float h, s, l, m, n;
+	_mdisplay_colorNormalize(_cptr, color, pxl, &h, &s, &l, &m, &n);
 
 	for(uint8_t i = 0; i < pxl; ++i)
 		for(uint8_t j = 0; j < pxl; ++j)
@@ -296,7 +311,40 @@ void mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color){
 
 }
 
+void mdisplay_hlvf_DrawColorIcon(uint8_t x, uint8_t y, uint8_t instance, uint8_t grayFlag) {
+	uint8_t pxl = 16;
+	uint16_t *_cptr;
+	_mdisplay_hlvf_retrieveColorIcon(instance, &pxl, &_cptr);
 
+	if(grayFlag) {
+		// calculate grayscale version of picture. super inefficiently
+		uint16_t _pxlsq = pxl * pxl;
+		uint8_t *tmpIcon = (uint8_t *)malloc(_pxlsq * sizeof(uint8_t));
+
+		for(uint16_t i = 0; i < _pxlsq; ++i){
+			uint8_t r = 8.2258064516129032258f * (_cptr[i] >> 11);
+			uint8_t g = 4.0476190476190476190f * ((_cptr[i] >> 5) & 0b00111111);
+			uint8_t b = 8.2258064516129032258f * (_cptr[i] & 0b00011111);
+			tmpIcon[i] = (uint8_t)((r + g + b) / 3.0);
+		}
+
+		// Normalize
+		float h, s, l, m, n;
+		// Now this is rly fucking inefficient but whuu cares. Congrats if u made it this far
+		_mdisplay_colorNormalize(tmpIcon, COLOR_GRAY, pxl, &h, &s, &l, &m, &n);
+
+		for(uint8_t i = 0; i < pxl; ++i)
+			for(uint8_t j = 0; j < pxl; ++j)
+				st7735_WritePixel(x + j, y + i, mdisplay_hsl_to565(h * 42.5, s * 255.0, m * (float)(tmpIcon[pxl * i + j]) + n));
+
+		free(tmpIcon);
+
+	} else
+			for(uint8_t i = 0; i < pxl; ++i)
+				for(uint8_t j = 0; j < pxl; ++j)
+					st7735_WritePixel(x + j, y + i, _cptr[pxl * i + j]);
+
+}
 
 
 

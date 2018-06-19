@@ -2,6 +2,10 @@
 #include "SDI.h"
 #include "MP3DI.h"
 
+// gcc sdi.c sditest.c mp3di.c -DDEBUG -std=c11 -Wall -o sditest
+
+const char* types[4] = {"Directory", "MP3 File", "Bitmap Image", "No Freaking Idea"};
+
 int main(){
 
   printf("***************** LISTING FILES *****************\n");
@@ -9,7 +13,7 @@ int main(){
   printf("List Size: %d\n", l->FILE_LIST_SIZE);
 
   for(int i = 0; i < l->FILE_LIST_SIZE; ++i)
-    printf("File Name: %s, File Size: %d\n", l->FILE_LIST[i]->SD_FILE_NAME, l->FILE_LIST[i]->SD_FILE_SIZE);
+    printf("File Name: %s, Type: %s, File Size: %d\n", l->FILE_LIST[i]->SD_FILE_NAME, types[l->FILE_LIST[i]->SD_FILE_TYPE], l->FILE_LIST[i]->SD_FILE_SIZE);
 
 
   printf("****************** LISTING MP3 ******************\n");

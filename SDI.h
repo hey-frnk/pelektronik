@@ -27,8 +27,15 @@ typedef struct SD_FILE_LIST {
   uint32_t          FILE_LIST_SIZE;   // Array size
 } SD_FILE_LIST;
 
+#ifndef DEBUG
+void 			SDI_Init();
+#endif
+
 // Allocates new list with all files
 SD_FILE_LIST*   SDI_getFileListFromDirectory(char *dir);
+
+// Add new file
+void            SDI_push(SD_FILE_LIST *list, SD_FILE *file);
 
 // Free the allocated memory
 void            SDI_free(SD_FILE_LIST *list);
