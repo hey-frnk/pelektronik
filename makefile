@@ -1,5 +1,5 @@
-main: maindebug.o MP3Display.o TrackDisplay.o MP3Display_routines.o MenuDisplay.o mdisplay_color.o mdisplay_hlvf.o himage.o MP3DI.o SDI.o
-	clang++ -DDEBUG -o main maindebug.o MP3Display.o TrackDisplay.o MenuDisplay.o mdisplay_color.o mdisplay_hlvf.o MP3Display_routines.o himage.o MP3DI.o SDI.o
+main: maindebug.o MP3Display.o TrackDisplay.o MP3Display_routines.o MenuDisplay.o mdisplay_color.o mdisplay_hlvf.o himage.o MP3DI.o SDI.o RTCI.o
+	clang++ -DDEBUG -o main maindebug.o MP3Display.o TrackDisplay.o MenuDisplay.o mdisplay_color.o mdisplay_hlvf.o MP3Display_routines.o himage.o MP3DI.o SDI.o RTCI.o
 
 maindebug.o: maindebug.cpp
 	clang++ -x c++ maindebug.cpp -DDEBUG -std=c++11 -Wall -c
@@ -30,3 +30,6 @@ MP3DI.o: MP3DI.c
 
 SDI.o: SDI.c
 	clang -x c SDI.c -DDEBUG -std=c11 -Wall -c
+
+RTCI.o: RTCI.c
+	clang -x c RTCI.c -DDEBUG -std=c11 -Wall -c

@@ -7,12 +7,6 @@ extern "C" {
 #ifndef MP3DISPLAY_HPP
 #define MP3DISPLAY_HPP
 
-typedef struct mtime {
-  uint8_t sec;
-  uint8_t min;
-  uint8_t hr;
-} mtime;
-
 enum MDISPLAY_TYPE {
   MDISPLAY_TYPE_MENU            = 0,
   MDISPLAY_TYPE_MUSICPLAY       = 1,
@@ -26,11 +20,11 @@ typedef struct MP3Display {
   void        (*show)                   (void *iptr);
   void        (*init)                   (struct MP3Display *iptr);
   void        (*setBatteryState)        (struct MP3Display *iptr, uint8_t batteryLevel);
-  void        (*updateTime)             (struct MP3Display *iptr, mtime t);
+  void        (*updateTime)             (struct MP3Display *iptr);
 
   // Attributes
   struct MP3Display_vTable              *vt;
-  mtime                                 t;
+  // mtime                                 t;
   uint8_t                               batteryLevel, type;
 } MP3Display;
 

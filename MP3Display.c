@@ -8,6 +8,7 @@
 #include "mdisplay_hlvf.h"
 #include "mdisplay_color.h"
 #include "font.h"
+#include "RTCI.h"
 
 static uint8_t MP3Display_getType(void *iptr) {
   return ((MP3Display *)iptr)->vt->getType(iptr);
@@ -40,11 +41,22 @@ static void setBatteryState(MP3Display *iptr, uint8_t batteryLevel) {
   }
 }
 
-static void updateTime(MP3Display *iptr, mtime t) {
-  iptr->t = t;
-  char tConst[6] = {(t.hr / 10) + '0', (t.hr % 10) + '0', ':', (t.min / 10) + '0', (t.min % 10) + '0', 0};
+static void updateTime(MP3Display *iptr) {
+  mtime t;
+  RTCI_getTime(&t);
+
+  char tConst[9] = {  (t.hr / 10) + '0',
+		  	  	  	  (t.hr % 10) + '0',
+					  ':',
+					  (t.min / 10) + '0',
+					  (t.min % 10) + '0',
+					  ':',
+					  (t.sec / 10) + '0',
+					  (t.sec % 10) + '0',
+					  0};
+
+  mdisplay_hlvf_FillRectangle(50, 4, 62, 9, COLOR_WHITE);
   mdisplay_hlvf_DrawString((_global_width >> 1), 3, tConst, COLOR_GRAY, FONT_8X12, ALIGNMENT_CENTER);
-  printf("Time: %hhuh, %hhum, %hhus\n", iptr->t.hr, iptr->t.min, iptr->t.sec);
 }
 
 void MP3Display_init(MP3Display *iptr) {

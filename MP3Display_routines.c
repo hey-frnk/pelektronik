@@ -27,6 +27,7 @@
   using namespace std;
 #else
   #include "st7735.h"
+  #include "RTCI.h"
 #endif
 
 #include "mdisplay_hlvf.h"
@@ -75,6 +76,9 @@ void _routine_BOOT(void){
 
   // Initialize SD Interface
   SDI_Init();
+
+  // Initialize RTC
+  RTCI_Init();
   #endif
 
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
@@ -152,8 +156,7 @@ void _routine_PLAY(void){
     INSTANCE_TrackDISPLAY->super.show(INSTANCE_TrackDISPLAY);
     // INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 4);
     INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 3);
-    mtime t = {11, 50, 13};
-    INSTANCE_TrackDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackDISPLAY, t);
+    INSTANCE_TrackDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackDISPLAY);
   }
 
   #ifdef DEBUG
@@ -201,8 +204,7 @@ void _routine_TRACKLIST(void){
   if(INSTANCE_TrackListDISPLAY != NULL) {
     INSTANCE_TrackListDISPLAY->super.show(INSTANCE_TrackListDISPLAY);
     INSTANCE_TrackListDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackListDISPLAY, 2);
-    mtime t = {12, 13, 02};
-    INSTANCE_TrackListDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackListDISPLAY, t);
+    INSTANCE_TrackListDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackListDISPLAY);
   }
 
   #ifdef DEBUG
@@ -249,8 +251,7 @@ void _routine_MAINMENU(void){
   if(INSTANCE_MenuDISPLAY != NULL){
     INSTANCE_MenuDISPLAY->super.show(INSTANCE_MenuDISPLAY);
     INSTANCE_MenuDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_MenuDISPLAY, 1);
-    mtime t = {11, 26, 23};
-    INSTANCE_MenuDISPLAY->super.updateTime((MP3Display *)INSTANCE_MenuDISPLAY, t);
+    INSTANCE_MenuDISPLAY->super.updateTime((MP3Display *)INSTANCE_MenuDISPLAY);
   }
 
   #ifdef DEBUG
