@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+// #include <time.h>
 
 #include "read_id3.h"
 #include "read_mheader.h" // @Frank
@@ -74,6 +75,8 @@ unsigned char read_ID3_info(const unsigned char tag_name,char * output_str, unsi
 
 		if(tag_name == LENGTH_ID3){ // Catch the length case @Frank
 			// Get first frame offset (inlining getFirstFrameOffset from read_mheader.h)
+			// clock_t begin = clock();
+
 			uint32_t firstFrameOffset = tag_size;
 		  mheader h;
 		  while(firstFrameOffset++)
@@ -81,6 +84,10 @@ unsigned char read_ID3_info(const unsigned char tag_name,char * output_str, unsi
 
 			uint32_t trackLength = _mheader_getLength(&h, mheader_getTotalFrameCount(fp, firstFrameOffset));
 			sprintf(output_str, "%u", trackLength);
+
+			// clock_t end = clock();
+			// double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+			// printf("Time spent: %f\n", time_spent);
 			return 1;
 		} // End @Frank
 

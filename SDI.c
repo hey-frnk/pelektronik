@@ -1,11 +1,27 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include "SDI.h"
 
+#ifdef DEBUG
+  #define SAMPLE_FILES 9
+
+  const char* tmp[SAMPLE_FILES] = {
+    "read_id3/Mark Diamond - Find You.mp3",
+    "read_id3/04. Love Alone.mp3",
+    "read_id3/22 (feat. Sam Tsui, Kurt Schneider, Against the Current and King the Kid).mp3",
+    "read_id3/Rival x Cadmium - Seasons (feat. Harley Bird).mp3",
+    "read_id3/DoubleV - Indigo.mp3",
+    "read_id3/Autograf – Sleepless In NYC.mp3",
+    "read_id3/The Tech Thieves  - Work On Me ~by KnightVision [soundtake.net].mp3",
+    "read_id3/THBD - Lost In The Night (Feat. Pipa Moran).mp3",
+    "read_id3/faded_conor_maynard.mp3"
+  };
+#endif
 
 // Get file ending
-static uint8_t _SDI_retrieveExtension(char *fileName){
+static uint8_t _SDI_retrieveExtension(const char *fileName){
   char *_extension = strrchr(fileName, '.');
   if(!_extension || _extension == fileName) return TYPE_DIRECTORY;
   ++_extension;
@@ -125,55 +141,15 @@ SD_FILE_LIST* SDI_getFileListFromDirectory(char *dir){
   scan_files("", newList);
 
   #else
-  // Create some random files in a stupid way
-  SD_FILE* file1 = malloc(sizeof(SD_FILE));
-  file1->SD_FILE_NAME = "read_id3/Mark Diamond - Find You.mp3";
-  file1->SD_FILE_TYPE = _SDI_retrieveExtension(file1->SD_FILE_NAME);
-  file1->SD_FILE_SIZE = 1234567; // (1.23 MB)
 
-  SD_FILE* file2 = malloc(sizeof(SD_FILE));
-  file2->SD_FILE_NAME = "read_id3/mlogictest.c";
-  file2->SD_FILE_TYPE = _SDI_retrieveExtension(file2->SD_FILE_NAME);
-  file2->SD_FILE_SIZE = 2345678; // (2.35 MB)
-
-  SD_FILE* file3 = malloc(sizeof(SD_FILE));
-  file3->SD_FILE_NAME = "read_id3/22 (feat. Sam Tsui, Kurt Schneider, Against the Current and King the Kid).mp3";
-  file3->SD_FILE_TYPE = _SDI_retrieveExtension(file3->SD_FILE_NAME);
-  file3->SD_FILE_SIZE = 999999; // (1.00 MB)
-
-  SD_FILE* file4 = malloc(sizeof(SD_FILE));
-  file4->SD_FILE_NAME = "read_id3/Rival x Cadmium - Seasons (feat. Harley Bird).mp3";
-  file4->SD_FILE_TYPE = _SDI_retrieveExtension(file4->SD_FILE_NAME);
-  file4->SD_FILE_SIZE = 5555; // (0.06 MB)
-
-  SD_FILE* file5 = malloc(sizeof(SD_FILE));
-  file5->SD_FILE_NAME = "read_id3/DoubleV - Indigo.mp3";
-  file5->SD_FILE_TYPE = _SDI_retrieveExtension(file5->SD_FILE_NAME);
-  file5->SD_FILE_SIZE = 9837837; // (9.84 MB)
-
-  SD_FILE* file6 = malloc(sizeof(SD_FILE));
-  file6->SD_FILE_NAME = "read_id3/Autograf – Sleepless In NYC.mp3";
-  file6->SD_FILE_TYPE = _SDI_retrieveExtension(file6->SD_FILE_NAME);
-  file6->SD_FILE_SIZE = 9837837; // (9.84 MB)
-
-  SD_FILE* file7 = malloc(sizeof(SD_FILE));
-  file7->SD_FILE_NAME = "read_id3/THBD - Lost In The Night (Feat. Pipa Moran).mp3";
-  file7->SD_FILE_TYPE = _SDI_retrieveExtension(file7->SD_FILE_NAME);
-  file7->SD_FILE_SIZE = 9837837; // (9.84 MB)
-
-  SD_FILE* file8 = malloc(sizeof(SD_FILE));
-  file8->SD_FILE_NAME = "read_id3/The Tech Thieves  - Work On Me ~by KnightVision [soundtake.net].mp3";
-  file8->SD_FILE_TYPE = _SDI_retrieveExtension(file8->SD_FILE_NAME);
-  file8->SD_FILE_SIZE = 9837837; // (9.84 MB)
-
-  SDI_push(newList, file1);
-  SDI_push(newList, file2);
-  SDI_push(newList, file3);
-  SDI_push(newList, file4);
-  SDI_push(newList, file5);
-  SDI_push(newList, file6);
-  SDI_push(newList, file7);
-  SDI_push(newList, file8);
+  for(int i = 0; i < SAMPLE_FILES; ++i) {
+    SD_FILE *file = malloc(sizeof(SD_FILE));
+    file->SD_FILE_NAME = (char *)calloc(strlen(tmp[i]) + 1, sizeof(char));
+    strcpy(file->SD_FILE_NAME, tmp[i]);
+    file->SD_FILE_TYPE = _SDI_retrieveExtension(file->SD_FILE_NAME);
+    file->SD_FILE_SIZE = i * 512;
+    SDI_push(newList, file);
+  }
   #endif
 
   return newList;
@@ -198,7 +174,10 @@ void SDI_push(SD_FILE_LIST *list, SD_FILE *file){
 
 // Free the allocated memory
 void SDI_free(SD_FILE_LIST *list){
-  for(uint32_t i = 0; i < list->FILE_LIST_SIZE; ++i) free(list->FILE_LIST[i]);
+  for(uint32_t i = 0; i < list->FILE_LIST_SIZE; ++i){
+    free(list->FILE_LIST[i]->SD_FILE_NAME);
+    free(list->FILE_LIST[i]);
+  }
   free(list->FILE_LIST);
   free(list);
 }

@@ -33,28 +33,28 @@ TrackList* __attribute__((weak)) MP3DI_initTrackListFromFileList(SD_FILE_LIST *l
       #endif
 
       // read title, album and artist
-      char *buf0 = (char *)calloc(BUFSIZE, sizeof(char));
+      char buf0[BUFSIZE];
       read_ID3_info(TITLE_ID3, buf0, BUFSIZE, file);
       newTrack->trackName = (char *)calloc(strlen(buf0) + 1, sizeof(char));
       strcpy(newTrack->trackName, buf0);
-      free(buf0);
 
-      char *buf1 = (char *)calloc(BUFSIZE, sizeof(char));
+      char buf1[BUFSIZE];
       read_ID3_info(ALBUM_ID3, buf1, BUFSIZE, file);
       newTrack->albumName = (char *)calloc(strlen(buf1) + 1, sizeof(char));
       strcpy(newTrack->albumName, buf1);
-      free(buf1);
 
-      char *buf2 = (char *)calloc(BUFSIZE, sizeof(char));
+      char buf2[BUFSIZE];
       read_ID3_info(ARTIST_ID3, buf2, BUFSIZE, file);
       newTrack->artistName = (char *)calloc(strlen(buf2) + 1, sizeof(char));
       strcpy(newTrack->artistName, buf2);
-      free(buf2);
 
-      char* buf3 = (char *)calloc(BUFSIZE, sizeof(char));
-      read_ID3_info(LENGTH_ID3, buf3, BUFSIZE, file);
+      #ifdef DEBUG
+      char buf3[10];
+      read_ID3_info(LENGTH_ID3, buf3, 10, file);
       newTrack->length = atoi(buf3);
-      free(buf3);
+      #else
+      newTrack->length = 0;
+      #endif
 
       trackList->list[_track_count] = newTrack;
       ++_track_count;
@@ -76,7 +76,12 @@ Track* MP3DI_TrackList_retrieveTrack(TrackList *list, uint32_t pos){
 }
 
 void MP3DI_TrackList_free(TrackList *list){
-  for(uint32_t i = 0; i < list->size; ++i) free(list->list[i]);
+  for(uint32_t i = 0; i < list->size; ++i){
+    free(list->list[i]->trackName);
+    free(list->list[i]->albumName);
+    free(list->list[i]->artistName);
+    free(list->list[i]);
+  }
   free(list->list);
   free(list);
 }

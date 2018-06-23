@@ -45,10 +45,10 @@ enum mh_CHANNELMODE{
 };
 
 typedef struct mheader{
-  uint32_t        mh_samplesPerSec,
-                  mh_samplesPerFrame,
-                  mh_bitrate;                // In bit per second
-  // uint16_t        // mh_bound,
+  uint16_t        mh_samplesPerSec,
+                  mh_samplesPerFrame;
+  uint32_t        mh_bitrate;                // In bit per second
+                  // mh_bound,
                   // mh_allocationTableIndex;
   uint8_t         mh_paddingSize,
                   _mh_lowerSamplingFrequencies,
