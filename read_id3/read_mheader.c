@@ -1,3 +1,7 @@
+// This is loosely based on MPAHeaderInfo (MPEG Audio Frame Header) by Konrad Windszus
+// Ported to sort-of-C
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include "read_mheader.h"
@@ -14,6 +18,11 @@
 #define file_seek_relative(fi,pos) fseek(fi,pos,SEEK_CUR)
 #define file_read(f,str,l,rea) rea=fread(str,1,l,f)
 #endif
+
+#define ID3HEADER_SIZE 10
+
+// Very dirty global header compare variable
+static uint32_t _mheader_hCMP = 0;
 
 // Constant lookup tables
 // sampling rates in hertz: 1. index = MPEG Version ID, 2. index = sampling rate index
@@ -119,7 +128,12 @@ const uint8_t _mh_SlotSizes[3] =
 
 
 // Read in and validate header
-MH_STATE mheader_init(mheader *headerInstance, uint8_t *header) {
+MH_STATE mheader_init(mheader *headerInstance, FIL* file, uint32_t fPos) {
+  uint8_t header[4] = {0};
+  uint32_t bytesRead = 0;
+  file_seek_absolute(file, fPos);
+  file_read(file, header, 4, bytesRead);
+
   // Frame check, cheater version (assume little endian)
   register uint16_t hb = (*(uint16_t *)header) & 0xF0FF;
   if(!(hb == 0xF0FF || hb == 0xE0FF)) return MH_STATE_HEADERCORRUPT;
@@ -235,6 +249,8 @@ MH_STATE mheader_init(mheader *headerInstance, uint8_t *header) {
 			headerInstance->mh_allocationTableIndex = 4;
 	}*/
 
+
+  _mheader_hCMP = *(uint32_t *)header; // Update new header compare
   return MH_STATE_OK;
 }
 
@@ -242,50 +258,63 @@ MH_STATE mheader_init(mheader *headerInstance, uint8_t *header) {
 // uint8_t mheader_isMono(mheader *headerInstance) {return(headerInstance->mh_channelMode == SingleChannel) ? 1 : 0;};
 
 // Get Total Length
-static uint32_t _mheader_getLength(mheader *headerInstance, uint32_t numFrames) {return numFrames * headerInstance->mh_samplesPerFrame / headerInstance->mh_samplesPerSec;};
+uint32_t _mheader_getLength(mheader *headerInstance, uint32_t numFrames) {return numFrames * headerInstance->mh_samplesPerFrame / headerInstance->mh_samplesPerSec;};
 
-uint32_t mheader_getLength(uint8_t *data) {
-  uint32_t firstFrameOffset = mheader_getFirstFrameOffset(data);
-  uint32_t totalFrameCount = mheader_getTotalFrameCount(data + firstFrameOffset);
+uint32_t mheader_getLength(FIL* file) {
+  uint32_t firstFrameOffset = mheader_getFirstFrameOffset(file);
+  uint32_t totalFrameCount = mheader_getTotalFrameCount(file, firstFrameOffset);
 
   mheader h;
-  mheader_init(&h, data + firstFrameOffset);
+  mheader_init(&h, file, firstFrameOffset);
 
   return _mheader_getLength(&h, totalFrameCount);
 }
 
+uint32_t j = 0;
+
 // Get frame size
-uint32_t mheader_getFrameSize(mheader *headerInstance){return (uint32_t)(\
+uint32_t mheader_getFrameSize(mheader *headerInstance){
+  // printf("GetFrameSize called! %u\n", ++j);
+
+  return (uint32_t)(\
         (_mh_Coefficients[headerInstance->_mh_lowerSamplingFrequencies][headerInstance->mh_layer] * headerInstance->mh_bitrate / headerInstance->mh_samplesPerSec) \
         + headerInstance->mh_paddingSize) << _mh_SlotSizes[headerInstance->mh_layer];};
 
 // Get first frame
-uint32_t mheader_getFirstFrameOffset(uint8_t *header) {
+uint32_t mheader_getFirstFrameOffset(FIL *file) {
   uint32_t i = 0;
-
+  uint8_t* idheader = (uint8_t *)malloc(10 * sizeof(uint8_t));
+  uint32_t bytesRead = 0;
+  // Navigate to file zero
+  file_seek_absolute(file, 0);
+  file_read(file, idheader, ID3HEADER_SIZE, bytesRead);
+  if ((idheader[0] != 'I') || (idheader[1] != 'D') || (idheader[2] != '3')) return 0;
   // Skip id3 header
-  uint32_t _id3hSize = (header[6] << 21) + (header[7] << 14) + (header[8] << 7) + header[9];
+  uint32_t _id3hSize = (idheader[6] << 21) | (idheader[7] << 14) | (idheader[8] << 7) | idheader[9];
   // printf("id3hsize %u\n", _id3hSize);
 
   // Retrieve first frame
   i += _id3hSize;
   mheader h;
   while(i++)
-    if(mheader_init(&h, header + i) == MH_STATE_OK) break;
+    if(mheader_init(&h, file, i) == MH_STATE_OK) break;
 
+  free(idheader);
   return i;
 }
 
-uint32_t mheader_getTotalFrameCount(uint8_t *header) {
+uint32_t mheader_getTotalFrameCount(FIL *file, uint32_t fPos) {
   // Assume valid header pointer
   mheader h;
-  if(mheader_init(&h, header) != MH_STATE_OK) return 0;
+  if(mheader_init(&h, file, fPos) != MH_STATE_OK) return 0;
   uint32_t cnt = 1, nextHSize = mheader_getFrameSize(&h);
   while(1) {
-    header += nextHSize;
-    if(mheader_init(&h, header) == MH_STATE_OK) ++cnt;
+    // Here is the old frame size
+    uint32_t _hCMPb = _mheader_hCMP;
+    fPos += nextHSize;
+    if(mheader_init(&h, file, fPos) == MH_STATE_OK) ++cnt;
     else return cnt;
-    nextHSize = mheader_getFrameSize(&h);
+    if(!(_hCMPb == _mheader_hCMP)) nextHSize = mheader_getFrameSize(&h);
   }
   return 0;   // Oops
 }

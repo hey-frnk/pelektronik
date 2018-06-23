@@ -5,20 +5,16 @@
 // gcc mlogictest.c read_mheader.c -std=c11 -Wall -o mlogictest
 
 int main(){
-  char* path = "Katelyn Tarver - Weekend Millionaires (Samuraii Remix).mp3";
+  char* path = "Crystal Lights.mp3";
 
   FILE* file;
   file = fopen(path, "r");
 
-  fseek(file, 0, SEEK_END);
-  unsigned int fileSize = ftell(file);
-  rewind(file);
-
-  unsigned char* buffer = malloc(fileSize * sizeof(unsigned char));
-  fread(buffer, 1, fileSize, file);
+  // unsigned char* buffer = malloc(fileSize * sizeof(unsigned char));
+  // fread(buffer, 1, fileSize, file);
 
   // mheader h;
-  uint32_t duration = mheader_getLength(buffer);
+  uint32_t duration = mheader_getLength(file);
   printf("Song Duration: %hhu:%hhu\n", (uint8_t)(duration / 60), (uint8_t)(duration % 60));
 
   /*uint32_t firstFrameOffset = mheader_getFirstFrameOffset(buffer, fileSize);

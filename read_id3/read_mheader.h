@@ -1,7 +1,14 @@
 #ifndef _READ_MHEADER
 #define _READ_MHEADER
 
-#include <stdint.h>
+
+#ifdef __arm__
+#include "../fat/ff.h"				// FAT File System Library
+#else  // for an embedded enviroment, using FatFs from chan
+#define FIL FILE
+#define rprintf printf
+#endif
+
 
 typedef enum {
   MH_STATE_OK = 0,
@@ -40,18 +47,18 @@ enum mh_CHANNELMODE{
 typedef struct mheader{
   uint32_t        mh_samplesPerSec,
                   mh_samplesPerFrame,
-                  mh_bitrate,                // In bit per second
-                  mh_paddingSize;
+                  mh_bitrate;                // In bit per second
   // uint16_t        // mh_bound,
                   // mh_allocationTableIndex;
-  uint8_t         _mh_lowerSamplingFrequencies;
+  uint8_t         mh_paddingSize,
+                  _mh_lowerSamplingFrequencies,
                   // mh_copyrighted,
                   // mh_privated,
                   // mh_original,
                   // mh_CRC,
                   // mh_modeExt;
 
-  uint8_t         mh_version,
+                  mh_version,
                   mh_layer;
                   // mh_emphasis,
                   // mh_channelMode;
@@ -60,21 +67,22 @@ typedef struct mheader{
 
 
 // Read in MPEG header
-MH_STATE mheader_init(mheader *headerInstance, uint8_t *header);
+MH_STATE mheader_init(mheader *headerInstance, FIL* file, uint32_t fPos);
 
 // Mono?
 uint8_t mheader_isMono(mheader *headerInstance);
 
 // Get total length
-uint32_t mheader_getLength(uint8_t *header);
+uint32_t mheader_getLength(FIL* file);
+uint32_t _mheader_getLength(mheader *headerInstance, uint32_t numFrames); // Internal
 
 // Get frame size
 uint32_t mheader_getFrameSize(mheader *headerInstance);
 
 // Calculate first frame
-uint32_t mheader_getFirstFrameOffset(uint8_t *header);
+uint32_t mheader_getFirstFrameOffset(FIL *file);
 
 // Calculate total frames
-uint32_t mheader_getTotalFrameCount(uint8_t *header);
+uint32_t mheader_getTotalFrameCount(FIL *file, uint32_t fPos);
 
 #endif

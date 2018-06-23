@@ -2,7 +2,7 @@
 #include "SDI.h"
 #include "MP3DI.h"
 
-// gcc sdi.c sditest.c mp3di.c -DDEBUG -std=c11 -Wall -o sditest
+// gcc sdi.c sditest.c mp3di.c read_id3/read_id3.c read_id3/read_mheader.c -DDEBUG -std=c11 -Wall -o sditest
 
 const char* types[4] = {"Directory", "MP3 File", "Bitmap Image", "No Freaking Idea"};
 
@@ -26,8 +26,13 @@ int main(){
 
   for(int i = 0; i < tl->size; ++i){
     Track *rTrack = MP3DI_TrackList_retrieveTrack(tl, i);
-    printf("Name: %s, Track Name: %s, ", rTrack->fileName, rTrack->trackName);
-    printf("Artist: %s, Album: %s, Length: %d\n", rTrack->artistName, rTrack->albumName, rTrack->length);
+    printf("\n+++++ MP3 File Start +++++\n");
+    printf("Name: %s\n", rTrack->fileName);
+    printf("Track Name: %s\n", rTrack->trackName);
+    printf("Artist: %s\n", rTrack->artistName);
+    printf("Album: %s\n", rTrack->albumName);
+    printf("Length: %d\n", rTrack->length);
+    printf("++++++ MP3 File End ++++++\n");
   }
 
   MP3DI_TrackList_free(tl);

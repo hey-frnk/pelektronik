@@ -19,12 +19,21 @@
  *  http://creativecommons.org/licenses/by-sa/3.0/us/   for details
  */
 
+ /*
+ 	* Slightly modified version which correctly calculates the track length based on frame size and count
+	* Calculation does take some time but at least it works in general. Not so safe in general though
+	*
+	* Provided by Frank Zheng, 06/23/2018. Every addition is marked with @Frank
+	*
+  */
+
 //#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "read_id3.h"
+#include "read_mheader.h" // @Frank
 
 #ifdef __arm__  // for an embedded enviroment, using FatFs from chan
 #include "../fat/ff.h"				// FAT File System Library
@@ -62,6 +71,18 @@ unsigned char read_ID3_info(const unsigned char tag_name,char * output_str, unsi
 
 	if (common_header[3] <= 0x04) {   //recognized id3 v2
 		unsigned int tag_size = (common_header[9]) | (common_header[8] << 7) | (common_header[7] << 14) | (common_header[6] << 28);
+
+		if(tag_name == LENGTH_ID3){ // Catch the length case @Frank
+			// Get first frame offset (inlining getFirstFrameOffset from read_mheader.h)
+			uint32_t firstFrameOffset = tag_size;
+		  mheader h;
+		  while(firstFrameOffset++)
+		    if(mheader_init(&h, fp, firstFrameOffset) == MH_STATE_OK) break;
+
+			uint32_t trackLength = _mheader_getLength(&h, mheader_getTotalFrameCount(fp, firstFrameOffset));
+			sprintf(output_str, "%u", trackLength);
+			return 1;
+		} // End @Frank
 
 		const char * compare_tagname = ((common_header[3] == 0x03)||(common_header[3] == 0x04))? (id3v2_3+(tag_name*4)) : (id3v2_2+(tag_name*4));
 		int just_safe = 30;  //to avoid an infinite loop limit the number of iterations.

@@ -127,39 +127,44 @@ SD_FILE_LIST* SDI_getFileListFromDirectory(char *dir){
   #else
   // Create some random files in a stupid way
   SD_FILE* file1 = malloc(sizeof(SD_FILE));
-  file1->SD_FILE_NAME = "paradise.mp3";
+  file1->SD_FILE_NAME = "read_id3/Mark Diamond - Find You.mp3";
   file1->SD_FILE_TYPE = _SDI_retrieveExtension(file1->SD_FILE_NAME);
   file1->SD_FILE_SIZE = 1234567; // (1.23 MB)
 
   SD_FILE* file2 = malloc(sizeof(SD_FILE));
-  file2->SD_FILE_NAME = "coastline.mp3";
+  file2->SD_FILE_NAME = "read_id3/mlogictest.c";
   file2->SD_FILE_TYPE = _SDI_retrieveExtension(file2->SD_FILE_NAME);
   file2->SD_FILE_SIZE = 2345678; // (2.35 MB)
 
   SD_FILE* file3 = malloc(sizeof(SD_FILE));
-  file3->SD_FILE_NAME = "trumptower.bmp";
+  file3->SD_FILE_NAME = "read_id3/22 (feat. Sam Tsui, Kurt Schneider, Against the Current and King the Kid).mp3";
   file3->SD_FILE_TYPE = _SDI_retrieveExtension(file3->SD_FILE_NAME);
   file3->SD_FILE_SIZE = 999999; // (1.00 MB)
 
   SD_FILE* file4 = malloc(sizeof(SD_FILE));
-  file4->SD_FILE_NAME = "somecode.cpp";
+  file4->SD_FILE_NAME = "read_id3/Rival x Cadmium - Seasons (feat. Harley Bird).mp3";
   file4->SD_FILE_TYPE = _SDI_retrieveExtension(file4->SD_FILE_NAME);
   file4->SD_FILE_SIZE = 5555; // (0.06 MB)
 
   SD_FILE* file5 = malloc(sizeof(SD_FILE));
-  file5->SD_FILE_NAME = "whiteblood.mp3";
+  file5->SD_FILE_NAME = "read_id3/DoubleV - Indigo.mp3";
   file5->SD_FILE_TYPE = _SDI_retrieveExtension(file5->SD_FILE_NAME);
   file5->SD_FILE_SIZE = 9837837; // (9.84 MB)
 
   SD_FILE* file6 = malloc(sizeof(SD_FILE));
-  file6->SD_FILE_NAME = "All I Want.mp3";
+  file6->SD_FILE_NAME = "read_id3/Autograf – Sleepless In NYC.mp3";
   file6->SD_FILE_TYPE = _SDI_retrieveExtension(file6->SD_FILE_NAME);
-  file6->SD_FILE_SIZE = 765432;
+  file6->SD_FILE_SIZE = 9837837; // (9.84 MB)
 
   SD_FILE* file7 = malloc(sizeof(SD_FILE));
-  file7->SD_FILE_NAME = "DearDiary.txt";
+  file7->SD_FILE_NAME = "read_id3/THBD - Lost In The Night (Feat. Pipa Moran).mp3";
   file7->SD_FILE_TYPE = _SDI_retrieveExtension(file7->SD_FILE_NAME);
-  file7->SD_FILE_SIZE = 3344;
+  file7->SD_FILE_SIZE = 9837837; // (9.84 MB)
+
+  SD_FILE* file8 = malloc(sizeof(SD_FILE));
+  file8->SD_FILE_NAME = "read_id3/The Tech Thieves  - Work On Me ~by KnightVision [soundtake.net].mp3";
+  file8->SD_FILE_TYPE = _SDI_retrieveExtension(file8->SD_FILE_NAME);
+  file8->SD_FILE_SIZE = 9837837; // (9.84 MB)
 
   SDI_push(newList, file1);
   SDI_push(newList, file2);
@@ -168,6 +173,7 @@ SD_FILE_LIST* SDI_getFileListFromDirectory(char *dir){
   SDI_push(newList, file5);
   SDI_push(newList, file6);
   SDI_push(newList, file7);
+  SDI_push(newList, file8);
   #endif
 
   return newList;
