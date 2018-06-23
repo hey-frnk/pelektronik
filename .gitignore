@@ -8,6 +8,9 @@
 *.lss
 *.map
 *.sym
+*.mp3
+*.jpg
+*.png
 
 # OS generated files #
 ######################
