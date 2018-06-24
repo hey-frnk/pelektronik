@@ -3,6 +3,7 @@ extern "C" {
 #endif
 
 // MP3 Data Interface functions
+// Why do assembly programmers need to know how to swim? ...
 
 #ifndef MP3DI_H
 #define MP3DI_H
@@ -63,3 +64,9 @@ uint8_t MP3DI_skipBackward(void);
 #ifdef __cplusplus
 }
 #endif
+
+
+
+
+
+// ...Because they work below C level.      #goVegan #dadProgrammerJokes

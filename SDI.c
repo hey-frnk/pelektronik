@@ -4,6 +4,8 @@
 #include <string.h>
 #include "SDI.h"
 
+// Why did the pirates code fail to compile?
+
 #ifdef DEBUG
   #define SAMPLE_FILES 9
 
@@ -181,3 +183,8 @@ void SDI_free(SD_FILE_LIST *list){
   free(list->FILE_LIST);
   free(list);
 }
+
+
+
+
+// They forgot the arrrrrrrrguments. #goVegan

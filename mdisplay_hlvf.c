@@ -5,6 +5,8 @@
  *      Author: Frank Zheng
  */
 
+// Here's a joke about NULL: ...
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -359,5 +361,5 @@ void mdisplay_hlvf_DrawColorIcon(uint8_t x, uint8_t y, uint8_t instance, uint8_t
 
 
 
-
+// ...
 // Go Vegan! (Hey glad you came this far)
