@@ -13,6 +13,13 @@
 
 // Why did the pirates code fail to compile?
 
+char *_concatSDI(const char *s1, const char *s2){
+  char *result = malloc(strlen(s1) + strlen(s2) + 1);
+  strcpy(result, s1);
+  strcat(result, s2);
+  return result;
+}
+
 #ifdef DEBUG
   #define SAMPLE_FILES 9
 
@@ -122,7 +129,12 @@ FRESULT scan_files (char* path, SD_FILE_LIST *lInstance) {
             	if(fno.fname[0] == '_') continue; 			// Track the beautiful files only
                 // printf("%s/%s\n", path, fno.fname);
             	SD_FILE *f1 = malloc(sizeof(SD_FILE)); 		// Create a new file link
-            	char *fName = malloc(strlen(fno.fname) * sizeof(char));
+
+            	//char *fNamePath = _concatSDI("/", path);
+            	//char *fName = _concatSDI(fNamePath, fno.fname);
+            	//free(fNamePath);
+
+            	char *fName = malloc(strlen(fno.fname) * sizeof(char) + 1);
             	strcpy(fName, fno.fname);
 
             	f1->SD_FILE_TYPE = _SDI_retrieveExtension(fno.fname);

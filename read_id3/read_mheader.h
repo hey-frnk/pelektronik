@@ -3,7 +3,7 @@
 
 
 #ifdef __arm__
-#include "../fat/ff.h"				// FAT File System Library
+#include "../ffs/ff.h"				// FAT File System Library
 #else  // for an embedded enviroment, using FatFs from chan
 #define FIL FILE
 #define rprintf printf

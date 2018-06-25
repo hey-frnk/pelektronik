@@ -33,26 +33,39 @@ TrackList* __attribute__((weak)) MP3DI_initTrackListFromFileList(SD_FILE_LIST *l
       newTrack->fileName = (char *)calloc(strlen(list->FILE_LIST[i]->SD_FILE_NAME) + 1, sizeof(char));
       strcpy(newTrack->fileName, list->FILE_LIST[i]->SD_FILE_NAME);
 
-      FIL* file;
       #ifdef DEBUG
+      FIL* file;
       file = fopen(newTrack->fileName, "r");
       #else
-      f_open(file, newTrack->fileName, FA_READ);
+      FIL file;
+      volatile FRESULT result = f_open(&file, newTrack->fileName, FA_READ);
       #endif
 
       // read title, album and artist
       char buf0[BUFSIZE];
+      #ifdef DEBUG
       read_ID3_info(TITLE_ID3, buf0, BUFSIZE, file);
+      #else
+      read_ID3_info(TITLE_ID3, buf0, BUFSIZE, &file);
+      #endif
       newTrack->trackName = (char *)calloc(strlen(buf0) + 1, sizeof(char));
       strcpy(newTrack->trackName, buf0);
 
       char buf1[BUFSIZE];
+      #ifdef DEBUG
       read_ID3_info(ALBUM_ID3, buf1, BUFSIZE, file);
+      #else
+      read_ID3_info(ALBUM_ID3, buf1, BUFSIZE, &file);
+      #endif
       newTrack->albumName = (char *)calloc(strlen(buf1) + 1, sizeof(char));
       strcpy(newTrack->albumName, buf1);
 
       char buf2[BUFSIZE];
+      #ifdef DEBUG
       read_ID3_info(ARTIST_ID3, buf2, BUFSIZE, file);
+      #else
+      read_ID3_info(ARTIST_ID3, buf2, BUFSIZE, &file);
+      #endif
       newTrack->artistName = (char *)calloc(strlen(buf2) + 1, sizeof(char));
       strcpy(newTrack->artistName, buf2);
 
@@ -70,7 +83,7 @@ TrackList* __attribute__((weak)) MP3DI_initTrackListFromFileList(SD_FILE_LIST *l
       #ifdef DEBUG
       fclose(file);
       #else
-      f_close(file);
+      f_close(&file);
       #endif
     }
   }
@@ -84,22 +97,26 @@ Track* MP3DI_TrackList_retrieveTrack(TrackList *list, uint32_t pos){
 }
 
 void MP3DI_retrieveTrackLength(Track *t) {
-  FIL* file;
-
   #ifdef DEBUG
+  FIL* file;
   file = fopen(t->fileName, "r");
   #else
-  f_open(file, t->fileName, FA_READ);
+  FIL file;
+  f_open(&file, t->fileName, FA_READ);
   #endif
 
   char buf[10];
+  #ifdef DEBUG
   read_ID3_info(LENGTH_ID3, buf, 10, file);
+  #else
+  read_ID3_info(LENGTH_ID3, buf, 10, &file);
+  #endif
   t->length = atoi(buf);
 
   #ifdef DEBUG
   fclose(file);
   #else
-  f_close(file);
+  f_close(&file);
   #endif
 }
 

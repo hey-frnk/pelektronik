@@ -139,6 +139,9 @@ void _routine_BOOT(void){
     // Yup I know now this is super consistent
     cout << "Boot Successful. Automatically entering." << endl;
     printf("Entering next state (PLAY)\n");
+
+  #else
+    HAL_Delay(2000);
   #endif
 
   // Get MP3 Directory
