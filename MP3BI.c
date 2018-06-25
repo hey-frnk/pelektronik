@@ -2,7 +2,7 @@
  * MP3BI.c
  *
  *  Created on: 13.06.2018
- *      Author: Katharina
+ *      Author: Katharina, Luise, Frank Zheng
  */
 
 #include <stdlib.h>

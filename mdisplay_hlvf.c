@@ -1,8 +1,8 @@
 /*
- * mdisplay_hlvf.c
+ * Part of the MP3 Player project PJElektronikSoSe2018
  *
- *  Created on: 30.05.2018
- *      Author: Frank Zheng
+ *  Created in May/June 2018
+ *      Author: Copyright (C) Frank Zheng
  */
 
 // Here's a joke about NULL: ...

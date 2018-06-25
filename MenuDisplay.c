@@ -1,3 +1,10 @@
+/*
+ * Part of the MP3 Player project PJElektronikSoSe2018
+ *
+ *  Created in May/June 2018
+ *      Author: Copyright (C) Frank Zheng
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

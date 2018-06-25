@@ -1,6 +1,9 @@
 /*
- *  This is the MP3 Display Color Library
- *  Created by Frank Zheng
+ * Part of the MP3 Player project PJElektronikSoSe2018
+ * This is the color library
+ *
+ *  Created in May/June 2018
+ *      Author: Copyright (C) Frank Zheng
  */
 
 #ifdef __cplusplus

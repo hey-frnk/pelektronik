@@ -1,3 +1,10 @@
+/*
+ * Part of the MP3 Player project PJElektronikSoSe2018
+ *
+ *  Created in May/June 2018
+ *      Author: Copyright (C) Frank Zheng
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
