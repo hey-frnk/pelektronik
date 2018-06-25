@@ -53,8 +53,11 @@ void MenuDisplay_show(void *iptr) {
       #endif
     }
 
+    char buf[15];
+    strncpy(buf, tptr->itemArray[i], 14);
+    buf[14] = 0;
     if(i == tptr->itemPos){ // Focus!
-      mdisplay_hlvf_DrawColorWheelStringFast(25, TOPBAROFFSET + 5 + _iStartOffset, tptr->itemArray[i], FONT_8X12, ALIGNMENT_LEFT);
+      mdisplay_hlvf_DrawColorWheelStringFast(25, TOPBAROFFSET + 5 + _iStartOffset, buf, FONT_8X12, ALIGNMENT_LEFT);
       // Draw advanced color icon?
       if(tptr->itemColorArray[i] == COLOR_WHITE) mdisplay_hlvf_DrawColorIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], 0);
       else mdisplay_hlvf_DrawIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], tptr->itemColorArray[i]);
@@ -62,7 +65,7 @@ void MenuDisplay_show(void *iptr) {
       mdisplay_hlvf_DrawChar(140, TOPBAROFFSET + 5 + _iStartOffset, '>', COLOR_GRAY, FONT_8X12);
     }
     else{ // Defocus!
-      mdisplay_hlvf_DrawString(25, TOPBAROFFSET + 5 + _iStartOffset, tptr->itemArray[i], COLOR_GRAY, FONT_8X12, ALIGNMENT_LEFT);
+      mdisplay_hlvf_DrawString(25, TOPBAROFFSET + 5 + _iStartOffset, buf, COLOR_GRAY, FONT_8X12, ALIGNMENT_LEFT);
 
       if(tptr->itemColorArray[i] == COLOR_WHITE) mdisplay_hlvf_DrawColorIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], 1);
       else mdisplay_hlvf_DrawIcon(3, TOPBAROFFSET + 3 + _iStartOffset, tptr->itemIconArray[i], COLOR_GRAY);
@@ -91,7 +94,11 @@ void MenuDisplay_itemDown(MenuDisplay *iptr){
   iptr->super.show((MP3Display *)iptr);
 }
 
-
+void MenuDisplay_deInit(MenuDisplay *iptr) {
+  free(iptr->itemIconArray);
+  free(iptr->itemColorArray);
+  free(iptr->itemArray);
+}
 
 void MenuDisplay_init(MenuDisplay *iptr) {
   printf("MenuDisplay initialized\n");
@@ -101,6 +108,7 @@ void MenuDisplay_init(MenuDisplay *iptr) {
   iptr->updateItems = MenuDisplay_updateItems;
   iptr->itemUp = MenuDisplay_itemUp;
   iptr->itemDown = MenuDisplay_itemDown;
+  iptr->deInit = MenuDisplay_deInit;
 
   iptr->itemPos = 0;
 

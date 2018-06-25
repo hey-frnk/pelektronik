@@ -1,0 +1,42 @@
+// MP3 Player Wiring Table
+
+Arduino Pin        | Ext. Header Pin      | STM32L476RG Pin      | Peripheral, P/Pin     | Description
+---------------------------------------------------------------------------------------------------------------------------
+
+NRST                 -                      7                      RESET >                 [DISPLAY] Common Reset Line
+
+D4                   PB5                    57                     CARD_CS >               [DISPLAY] SPI Card Chip Select
+
+D8                   PA9                    42                     D/C >                   [DISPLAY] Data/Command Select Line
+
+D10 (CS, PWM)        PB6                    58                     TFT_CS >                [DISPLAY] SPI Display Chip Select
+
+D11 (MOSI, PWM)      PA7                    23                     MOSI >                  [DISPLAY] SPI MOSI
+
+D12 (MISO)           PA6                    22                     MISO <                  [DISPLAY] SPI MISO
+
+D13 (SCK)            PA5                    21                     SCK >                   [DISPLAY] SPI Clock Line
+
+
+A0                   PA0                    14                     PHYS_BUTTON 0 <         [HID] Button 0 Interrupt Input
+
+A1                   PA1                    15                     PHYS_BUTTON 1 <         [HID] Button 1 Interrupt Input 
+
+-                    PC2 (35, LEFT)         10                     PHYS_BUTTON 2 <         [HID] Button 2 Interrupt Input
+
+A2                   PA4                    20                     PHYS_BUTTON 3 <         [HID] Button 3 Interrupt Input
+
+
+
+
+// Display Pinout
+GND
+VCC
+RESET
+D/C
+CARD_CS
+TFT_CS
+MOSI
+SCK
+MISO
+LITE

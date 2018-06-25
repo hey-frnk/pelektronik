@@ -2,44 +2,30 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+// This is the place where all headers meet. WOHOO
+#include "mdisplay_hlvf.h"
+#include "mdisplay_color.h"
+#include "font.h"
+#include "MP3Display.h"
+#include "SDI.h"
+#include "MP3DI.h"
+#include "MP3BI.h"
+#include "TrackDisplay.h"
+#include "MenuDisplay.h"
+#include "MP3Display_routines.h"
+
 #ifdef DEBUG
   #include <iostream>
   #include <string>
   #include <sstream>
   #include <fstream>
   #include "debug/himage.h"
-
-  void transpose(hImage* image1){
-    for(int i = 0; i < image1->getWidth(); ++i){
-      for(int j = 0; j < i; ++j){
-        for(int k = 0; k < 3; ++k){
-          uint8_t tmp = image1->getPixel(i, j, k);
-          image1->setPixel(i, j, image1->getPixel(j, i, k), k);
-          image1->setPixel(j, i, tmp, k);
-        }
-      }
-    }
-  }
-
-  // find . -name .DS_Store -print0 | xargs -0 git rm -f --ignore-unmatch
-  hImage *_crObj = nullptr;
-
-  using namespace std;
 #else
   #include "st7735.h"
   #include "RTCI.h"
 #endif
 
-#include "mdisplay_hlvf.h"
-#include "mdisplay_color.h"
-#include "font.h"
-
-#include "MP3Display.h"
-#include "SDI.h"
-#include "MP3DI.h"
-#include "TrackDisplay.h"
-#include "MenuDisplay.h"
-#include "MP3Display_routines.h"
+// Ein Mathematiker und ein Physiker springen vom Dach. Der Mathematiker fliegt nach oben. Warum?
 
 // Active Instance
 MP3Display* INSTANCE_Active = NULL;
@@ -63,7 +49,60 @@ const char* menuElements[6] = {"Now Playing", "Shuffle All", "Record Voice", "Se
 const uint8_t menuElementIconArray[6] = {NAV_PLAY, HEART16, NAV_RECORD, NAV_SETTINGS, NAV_SLEEP, NAV_SHDN};
 const uint16_t menuElementColorArray[6] = {COLOR_BLACK, COLOR_RED, COLOR_BLACK, 0x1987, COLOR_YELLOW, COLOR_BRRED};
 
+void mp3display_routine_retrieveButton(uint8_t *b0, uint8_t *b1, uint8_t *b2, uint8_t *b3) {
+  *b0 = MP3BI_requestState(BUTTON_LEFT);
+  MP3BI_resetButton(BUTTON_LEFT);
+  *b1 = MP3BI_requestState(BUTTON_MENU);
+  MP3BI_resetButton(BUTTON_MENU);
+  *b2 = MP3BI_requestState(BUTTON_BACK);
+  MP3BI_resetButton(BUTTON_BACK);
+  *b3 = MP3BI_requestState(BUTTON_RIGHT);
+  MP3BI_resetButton(BUTTON_RIGHT);
+}
+
 Track* currentTrack = NULL;
+
+// +++++++++++++ DEBUG ONLY FUNCTIONS +++++++++++++
+#ifdef DEBUG
+  using namespace std;
+
+  void transpose(hImage* image1){
+    for(int i = 0; i < image1->getWidth(); ++i){
+      for(int j = 0; j < i; ++j){
+        for(int k = 0; k < 3; ++k){
+          uint8_t tmp = image1->getPixel(i, j, k);
+          image1->setPixel(i, j, image1->getPixel(j, i, k), k);
+          image1->setPixel(j, i, tmp, k);
+        }
+      }
+    }
+  }
+
+  // find . -name .DS_Store -print0 | xargs -0 git rm -f --ignore-unmatch
+  hImage *_crObj = nullptr;
+
+  void _transposePrintImg(MP3Display_State mp3display_state) {
+    transpose(_crObj);
+    stringstream s;
+    s << "FSM_" << (int)mp3display_state << ".bmp";
+    _crObj -> setFileName(s.str());
+    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
+    transpose(_crObj);
+  }
+
+  char _readNextState() {
+    // Read next state
+    char c = 0;
+    cout << "State: " << (int)mp3display_state << " looped. Waiting for next action (l/L, m/M, b/B, r/R): ";
+    cin >> ws;
+    cin >> c;
+    return c;
+  }
+#endif
+// +++++++++++++ END OF DEBUG ONLY FUNCTIONS
+
+
+
 
 void _routine_BOOT(void){
   #ifdef DEBUG
@@ -86,52 +125,25 @@ void _routine_BOOT(void){
   mdisplay_hlvf_DrawString(56, 48, (char *)"welcome.", COLOR_GRAY, FONT_8X14, ALIGNMENT_LEFT);
   mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, (char*)"(C) by LuiseKathiFrank", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
 
-  // Get MP3 Directory
-  // SD_FILE_LIST *l = SDI_getFileListFromDirectory("/");
-  // TrackList *tl = MP3DI_initTrackListFromFileList(l);
-  // SDI_free(l);
-
-  // currentTrack = MP3DI_TrackList_retrieveTrack(tl, 1);
-
   #ifdef DEBUG
-    transpose(_crObj);
-    stringstream s;
-    s << "FSM_" << (int)mp3display_state << ".bmp";
-    _crObj -> setFileName(s.str());
-    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
-    transpose(_crObj);
+    _transposePrintImg(mp3display_state);
 
-    // Read next state
-    char c = 0;
-    cout << "Boot Successful. Any key to continue: ";
-    cin >> ws;
-    cin >> c;
-
-    if(c == 'm') {
-      printf("Entering next state (MENU)\n");
-      MP3Display_State nextState = MP3DISPLAYSTATE_MAINMENU;
-      mp3display_state = nextState;
-      (*MP3DisplayState_Routine[nextState])();
-    } else if(c == 'p') {
-      printf("Entering next state (PLAY)\n");
-      MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
-      mp3display_state = nextState;
-      (*MP3DisplayState_Routine[nextState])();
-    } else if(c == 'f') {
-      printf("Entering next state (TRACK_FS_LIST)\n");
-      MP3Display_State nextState = MP3DISPLAYSTATE_TRACKLIST;
-      mp3display_state = nextState;
-      (*MP3DisplayState_Routine[nextState])();
-    } else exit(0);
-  #else
-    HAL_Delay(2000);
-
-    printf("Boot Successful. Entering next state (PLAY)\n");
-    MP3Display_State nextState = MP3DISPLAYSTATE_TRACKLIST;
-    mp3display_state = nextState;
-    (*MP3DisplayState_Routine[nextState])();
+    // Yup I know now this is super consistent
+    cout << "Boot Successful. Automatically entering." << endl;
+    printf("Entering next state (PLAY)\n");
   #endif
 
+  // Get MP3 Directory
+  SD_FILE_LIST *l = SDI_getFileListFromDirectory(NULL);
+  TrackList *tl = MP3DI_initTrackListFromFileList(l);
+  SDI_free(l);
+
+  // Play 1st MP3 file found
+  currentTrack = MP3DI_TrackList_retrieveTrack(tl, 0);
+
+  MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
+  mp3display_state = nextState;
+  (*MP3DisplayState_Routine[nextState])();
 }
 
 void _routine_PLAY(void){
@@ -157,22 +169,31 @@ void _routine_PLAY(void){
     // INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 4);
     INSTANCE_TrackDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_TrackDISPLAY, 3);
     INSTANCE_TrackDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackDISPLAY);
+
+    // Check for state change
   }
 
   #ifdef DEBUG
-    printf("%d\n", (int)mp3display_state);
-
-    transpose(_crObj);
-    stringstream s;
-    s << "FSM_" << (int)mp3display_state << ".bmp";
-    _crObj -> setFileName(s.str());
-    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
-    transpose(_crObj);
+    _transposePrintImg(mp3display_state);
+    char c = _readNextState();
+    _MP3BI_ci2cl(c);
   #endif
 
+  uint8_t btnLeft = 0, btnMenu = 0, btnBack = 0, btnRight = 0;
+  mp3display_routine_retrieveButton(&btnLeft, &btnMenu, &btnBack, &btnRight);
+
+  // Back to file list. Prepare FSM change
+  if(btnBack == BUTTON_STATE_LONGPRESS) {
+    mp3display_state = MP3DISPLAYSTATE_TRACKLIST;
+    free(INSTANCE_TrackDISPLAY);
+    INSTANCE_TrackDISPLAY = NULL;
+    INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
+    // (*MP3DisplayState_Routine[mp3display_state])();
+  }
 }
 
 void _routine_TRACKLIST(void){
+  static SD_FILE_LIST *l = NULL;
   // Check for track list menu instance availability
   if(INSTANCE_TrackListDISPLAY == NULL){
     INSTANCE_TrackListDISPLAY = (MenuDisplay *)malloc(sizeof(MenuDisplay));
@@ -180,7 +201,7 @@ void _routine_TRACKLIST(void){
     INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
 
     // Retrieve current directory
-    SD_FILE_LIST *l = SDI_getFileListFromDirectory(NULL);
+    l = SDI_getFileListFromDirectory(NULL);
     uint32_t _l_size = l->FILE_LIST_SIZE;
     uint8_t *_iconArr = (uint8_t *)malloc(_l_size * sizeof(uint8_t));
     uint16_t *_colorArr = (uint16_t *)malloc(_l_size * sizeof(uint16_t));
@@ -208,37 +229,66 @@ void _routine_TRACKLIST(void){
   }
 
   #ifdef DEBUG
-    transpose(_crObj);
-    stringstream s;
-    s << "FSM_" << (int)mp3display_state << ".bmp";
-    _crObj -> setFileName(s.str());
-    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
-    transpose(_crObj);
-
-    printf("%d\n", (int)mp3display_state);
-    // Read next state
-    char c = 0;
-    cout << "Main menu. What to do next? (u: up, d: down, p: play): ";
-    cin >> ws;
-    cin >> c;
-
-    if(c == 'e') exit(0);
-    else if(c == 'u'){
-      printf("Menu up pressed\n");
-      INSTANCE_TrackListDISPLAY->itemUp(INSTANCE_TrackListDISPLAY);
-    } else if(c == 'd'){
-      printf("Menu down pressed\n");
-      INSTANCE_TrackListDISPLAY->itemDown(INSTANCE_TrackListDISPLAY);
-    } else if(c == 'p'){
-      printf("Entering next state (PLAY)\n");
-      MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
-      mp3display_state = nextState;
-      (*MP3DisplayState_Routine[nextState])();
-    }
+    _transposePrintImg(mp3display_state);
+    char c = _readNextState();
+    _MP3BI_ci2cl(c);
   #endif
+
+  uint8_t btnLeft = 0, btnMenu = 0, btnBack = 0, btnRight = 0;
+  mp3display_routine_retrieveButton(&btnLeft, &btnMenu, &btnBack, &btnRight);
+
+  // One Item Up
+  if(btnLeft == BUTTON_STATE_SHORTPRESS) {
+    #ifdef DEBUG
+    printf("File list menu up pressed\n");
+    #endif
+
+    INSTANCE_TrackListDISPLAY->itemUp(INSTANCE_TrackListDISPLAY);
+  }
+
+  // One Item Down
+  if(btnRight == BUTTON_STATE_SHORTPRESS) {
+    #ifdef DEBUG
+    printf("File list menu down pressed\n");
+    #endif
+
+    INSTANCE_TrackListDISPLAY->itemDown(INSTANCE_TrackListDISPLAY);
+  }
+
+  // Play selected song
+  if(btnMenu == BUTTON_STATE_SHORTPRESS) {
+    // List files once again, Get MP3 Directory
+    l = SDI_getFileListFromDirectory(NULL);
+    // If valid MP3, set new MP3 file and switch to track playing
+    uint32_t itemPos = INSTANCE_TrackListDISPLAY->itemPos;
+    if(l->FILE_LIST[itemPos]->SD_FILE_TYPE == TYPE_MP3FILE) {
+      TrackList *tl = MP3DI_initTrackListFromFileList(l);
+      Track *tr = MP3DI_TrackList_retrieveTrack(tl, itemPos);
+      if(tr) {
+        currentTrack = tr;
+        mp3display_state = MP3DISPLAYSTATE_PLAY;
+        INSTANCE_TrackListDISPLAY->deInit(INSTANCE_TrackListDISPLAY);
+        free(INSTANCE_TrackListDISPLAY);
+        INSTANCE_TrackListDISPLAY = NULL;
+        INSTANCE_Active = (MP3Display *)INSTANCE_TrackDISPLAY;
+      }
+    }
+    SDI_free(l);
+  }
+
+  // Back to main menu
+  if(btnBack == BUTTON_STATE_SHORTPRESS) {
+    if(l != NULL) SDI_free(l);
+    mp3display_state = MP3DISPLAYSTATE_MAINMENU;
+    INSTANCE_TrackListDISPLAY->deInit(INSTANCE_TrackListDISPLAY);
+    free(INSTANCE_TrackListDISPLAY);
+    INSTANCE_TrackListDISPLAY = NULL;
+    INSTANCE_Active = (MP3Display *)INSTANCE_MenuDISPLAY;
+  }
+
 }
 
-void _routine_MAINMENU(void){
+void _routine_MAINMENU(void) {
   // Check for main menu instance availability
   if(INSTANCE_MenuDISPLAY == NULL){
     INSTANCE_MenuDISPLAY = (MenuDisplay *)malloc(sizeof(MenuDisplay));
@@ -255,34 +305,42 @@ void _routine_MAINMENU(void){
   }
 
   #ifdef DEBUG
-    transpose(_crObj);
-    stringstream s;
-    s << "FSM_" << (int)mp3display_state << ".bmp";
-    _crObj -> setFileName(s.str());
-    cout << "Bitmap successfully written to :" << _crObj -> saveAndReturnPath() << "." << endl;
-    transpose(_crObj);
-
-    printf("%d\n", (int)mp3display_state);
-    // Read next state
-    char c = 0;
-    cout << "Main menu. What to do next? (u: up, d: down, p: play): ";
-    cin >> ws;
-    cin >> c;
-
-    if(c == 'e') exit(0);
-    else if(c == 'u'){
-      printf("Menu up pressed\n");
-      INSTANCE_MenuDISPLAY->itemUp(INSTANCE_MenuDISPLAY);
-    } else if(c == 'd'){
-      printf("Menu down pressed\n");
-      INSTANCE_MenuDISPLAY->itemDown(INSTANCE_MenuDISPLAY);
-    } else if(c == 'p'){
-      printf("Entering next state (PLAY)\n");
-      MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
-      mp3display_state = nextState;
-      (*MP3DisplayState_Routine[nextState])();
-    }
+    _transposePrintImg(mp3display_state);
+    char c = _readNextState();
+    _MP3BI_ci2cl(c);
   #endif
+
+  uint8_t btnLeft = 0, btnMenu = 0, btnBack = 0, btnRight = 0;
+  mp3display_routine_retrieveButton(&btnLeft, &btnMenu, &btnBack, &btnRight);
+
+  // One Item Up
+  if(btnLeft == BUTTON_STATE_SHORTPRESS) {
+    #ifdef DEBUG
+    printf("Main menu up pressed\n");
+    #endif
+
+    INSTANCE_MenuDISPLAY->itemUp(INSTANCE_MenuDISPLAY);
+  }
+
+  // One Item Down
+  if(btnRight == BUTTON_STATE_SHORTPRESS) {
+    #ifdef DEBUG
+    printf("Main menu down pressed\n");
+    #endif
+
+    INSTANCE_MenuDISPLAY->itemDown(INSTANCE_MenuDISPLAY);
+  }
+
+  if(btnMenu == BUTTON_STATE_SHORTPRESS) {
+    // If selected 0th element (play)
+    uint32_t itemPos = INSTANCE_MenuDISPLAY->itemPos;
+    if(itemPos == 0) {
+      mp3display_state = MP3DISPLAYSTATE_TRACKLIST;
+      free(INSTANCE_MenuDISPLAY);
+      INSTANCE_MenuDISPLAY = NULL;
+      INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
+    }
+  }
 }
 
 void _routine_SETTINGS(void){
@@ -300,3 +358,13 @@ void _routine_SLEEP(void){
 void _routine_SHUTDOWN(void){
   printf("Hello8\n");
 }
+
+
+
+
+
+
+
+
+// Er hat das Vorzeichen verdreht.
+// Glad you found this. #goVegan!!

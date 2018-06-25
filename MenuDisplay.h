@@ -13,6 +13,7 @@ typedef struct MenuDisplay {
   void        (*updateItems)            (struct MenuDisplay *iptr, char **itemArray, uint8_t *itemIconArray, uint16_t *itemColorArray, uint32_t itemArraySize);
   void        (*itemUp)                 (struct MenuDisplay *iptr);
   void        (*itemDown)               (struct MenuDisplay *iptr);
+  void        (*deInit)                 (struct MenuDisplay *iptr);
 
   uint8_t                   *itemIconArray;
   uint16_t                  *itemColorArray;
