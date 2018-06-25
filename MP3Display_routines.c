@@ -16,6 +16,7 @@
 #include "MP3Display.h"
 #include "SDI.h"
 #include "MP3DI.h"
+#include "read_id3/read_id3.h"
 #include "MP3BI.h"
 #include "TrackDisplay.h"
 #include "MenuDisplay.h"
@@ -147,6 +148,7 @@ void _routine_BOOT(void){
 
   // Play 1st MP3 file found
   currentTrack = MP3DI_TrackList_retrieveTrack(tl, 0);
+  MP3DI_retrieveTrackLength(currentTrack);
 
   MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
   mp3display_state = nextState;
@@ -273,6 +275,7 @@ void _routine_TRACKLIST(void){
       Track *tr = MP3DI_TrackList_retrieveTrack(tl, itemPos);
       if(tr) {
         currentTrack = tr;
+        MP3DI_retrieveTrackLength(currentTrack);
         mp3display_state = MP3DISPLAYSTATE_PLAY;
         INSTANCE_TrackListDISPLAY->deInit(INSTANCE_TrackListDISPLAY);
         free(INSTANCE_TrackListDISPLAY);

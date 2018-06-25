@@ -21,7 +21,7 @@
 
  /*
  	* Slightly modified version which correctly calculates the track length based on frame size and count
-	* Calculation does take some time but at least it works in general. Not so safe in general though
+	* Calculation does take some time but at least it works. Not so safe in general though
 	*
 	* Provided by Frank Zheng, 06/23/2018. Every addition is marked with @Frank
 	*

@@ -30,7 +30,8 @@ TrackList* __attribute__((weak)) MP3DI_initTrackListFromFileList(SD_FILE_LIST *l
     // If MP3, push item into array
     if(list->FILE_LIST[i]->SD_FILE_TYPE == TYPE_MP3FILE){
       Track* newTrack = (Track *)malloc(sizeof(Track));
-      newTrack->fileName = list->FILE_LIST[i]->SD_FILE_NAME;
+      newTrack->fileName = (char *)calloc(strlen(list->FILE_LIST[i]->SD_FILE_NAME) + 1, sizeof(char));
+      strcpy(newTrack->fileName, list->FILE_LIST[i]->SD_FILE_NAME);
 
       FIL* file;
       #ifdef DEBUG
@@ -55,7 +56,7 @@ TrackList* __attribute__((weak)) MP3DI_initTrackListFromFileList(SD_FILE_LIST *l
       newTrack->artistName = (char *)calloc(strlen(buf2) + 1, sizeof(char));
       strcpy(newTrack->artistName, buf2);
 
-      #ifdef DEBUG
+      #ifdef KATORDGABIGAGAGAGAGA // Basically this is never true. Thus just an old testing function
       char buf3[10];
       read_ID3_info(LENGTH_ID3, buf3, 10, file);
       newTrack->length = atoi(buf3);
@@ -80,6 +81,26 @@ TrackList* __attribute__((weak)) MP3DI_initTrackListFromFileList(SD_FILE_LIST *l
 Track* MP3DI_TrackList_retrieveTrack(TrackList *list, uint32_t pos){
   if(pos >= list->size) return NULL;
   return list->list[pos];
+}
+
+void MP3DI_retrieveTrackLength(Track *t) {
+  FIL* file;
+
+  #ifdef DEBUG
+  file = fopen(t->fileName, "r");
+  #else
+  f_open(file, t->fileName, FA_READ);
+  #endif
+
+  char buf[10];
+  read_ID3_info(LENGTH_ID3, buf, 10, file);
+  t->length = atoi(buf);
+
+  #ifdef DEBUG
+  fclose(file);
+  #else
+  f_close(file);
+  #endif
 }
 
 void MP3DI_TrackList_free(TrackList *list){

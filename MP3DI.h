@@ -41,6 +41,9 @@ void MP3DI_TrackList_free(TrackList *list);
 // Retrieve track
 Track* MP3DI_TrackList_retrieveTrack(TrackList *l, uint32_t pos);
 
+// Retrieve track length
+void MP3DI_retrieveTrackLength(Track *t);
+
 
 // Play Track
 // When this function is called, a Track track is played
