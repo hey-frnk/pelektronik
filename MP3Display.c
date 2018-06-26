@@ -17,6 +17,8 @@
 #include "font.h"
 #include "RTCI.h"
 
+char tRender[6] = {0};
+
 static uint8_t MP3Display_getType(void *iptr) {
   return ((MP3Display *)iptr)->vt->getType(iptr);
 }
@@ -52,17 +54,22 @@ static void updateTime(MP3Display *iptr) {
   mtime t;
   RTCI_getTime(&t);
 
-  char tConst[9] = {  (t.hr / 10) + '0',
+  char tConst[/*9*/ 6] = {  (t.hr / 10) + '0',
 		  	  	  	  (t.hr % 10) + '0',
 					  ':',
 					  (t.min / 10) + '0',
 					  (t.min % 10) + '0',
-					  ':',
-					  (t.sec / 10) + '0',
-					  (t.sec % 10) + '0',
+					  // ':',
+					  // (t.sec / 10) + '0',
+					  // (t.sec % 10) + '0',
 					  0};
 
-  mdisplay_hlvf_FillRectangle(50, 4, 62, 9, COLOR_WHITE);
+  // Find changes, blank out for change
+  for(uint8_t i = 0; i < 5; ++i) {
+    if(tConst[i] != tRender[i]) mdisplay_hlvf_FillRectangle(61 + (i << 3), 3, 8, 10, COLOR_WHITE);
+    tRender[i] = tConst[i];
+  }
+
   mdisplay_hlvf_DrawString((_global_width >> 1), 3, tConst, COLOR_GRAY, FONT_8X12, ALIGNMENT_CENTER);
 }
 

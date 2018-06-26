@@ -92,13 +92,13 @@ void MenuDisplay_updateItems(MenuDisplay *iptr, char **itemArray, uint8_t *itemI
 void MenuDisplay_itemUp(MenuDisplay *iptr){
   if(iptr->itemPos > 0) --(iptr->itemPos);
   mdisplay_hlvf_FillScreen(COLOR_WHITE);  // CLR
-  iptr->super.show((MP3Display *)iptr);
+  // iptr->super.show((MP3Display *)iptr);
 }
 
 void MenuDisplay_itemDown(MenuDisplay *iptr){
   if(iptr->itemPos < iptr->itemArraySize - 1) ++(iptr->itemPos);
   mdisplay_hlvf_FillScreen(COLOR_WHITE);  // CLR
-  iptr->super.show((MP3Display *)iptr);
+  // iptr->super.show((MP3Display *)iptr);
 }
 
 void MenuDisplay_deInit(MenuDisplay *iptr) {
