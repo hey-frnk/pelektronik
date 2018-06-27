@@ -9,7 +9,7 @@
 #include "SDI.h"
 #include "MP3DI.h"
 
-// gcc sdi.c sditest.c mp3di.c read_id3/read_id3.c read_id3/read_mheader.c -DDEBUG -std=c11 -Wall -o sditest
+// gcc sdi.c sditest.c mp3di.c read_id3/read_id3.c read_id3/read_mheader.c -DDEBUG -DKATORDGABIGAGAGAGAGA -std=c11 -Wall -o sditest
 
 const char* types[4] = {"Directory", "MP3 File", "Bitmap Image", "No Freaking Idea"};
 

@@ -134,49 +134,32 @@ uint32_t _mheader_initFast(FIL* file, uint32_t fPos) {
 	return *(uint32_t *)header;
 }
 
-MH_STATE _mheader_initCheck(mheader *headerInstance, uint32_t fHeader) {
-	// printf("InitCheck called\n");
-  uint8_t *header = (uint8_t *)&fHeader;
+int32_t mheader_getNextFrame(uint32_t headerToDecode) {
+	uint8_t *header = (uint8_t *) &headerToDecode;
 
-  // Frame check, cheater version (assume little endian)
+	// Frame check, cheater version (assume little endian)
   register uint16_t hb = (*(uint16_t *)header) & 0xF0FF;
-  if(!(hb == 0xF0FF || hb == 0xE0FF)) return MH_STATE_HEADERCORRUPT;
+  if(!(hb == 0xF0FF || hb == 0xE0FF)) return -1;
 
-  // Fast corrupt handler
-  register uint8_t _mh_version = ((header[1] >> 3) & 0x03);
-  if(_mh_version == MPEGReserved) return MH_STATE_HEADERCORRUPT;
+  register uint8_t mh_version = ((header[1] >> 3) & 0x03);
+  if(mh_version == MPEGReserved) return -1;
+  register uint8_t bitrateIndex = ((header[2] >> 4) & 0x0F);
+  if(bitrateIndex == 0x0F) return -1;
+  register uint8_t bIndex = ((header[2] >> 2) & 0x03);
+  if(bIndex == 0x03) return -1;
+	if((header[3] & 0x03) == EmphReserved) return -1;
+  uint8_t mh_layer = (3 - ((header[1] >> 1) & 0x03));
+  if(mh_layer == LayerReserved) return -1;
+  uint8_t mh_lowerSamplingFrequencies = (mh_version == MPEG1) ? 0 : 1;
 
-  register uint8_t _bitrateIndex = ((header[2] >> 4) & 0x0F);
-  if(_bitrateIndex == 0x0F) return MH_STATE_HEADERCORRUPT;
+	// Get bitrate
+	uint32_t mh_bitrate = _mh_Bitrates[mh_lowerSamplingFrequencies][mh_layer][bitrateIndex] * 1000; // kbit -> bit
+  uint16_t mh_samplesPerSec = _mh_SamplingRates[mh_version][bIndex];
+  uint8_t mh_paddingSize = ((header[2] >> 1) & 0x01);
+	// uint16_t mh_samplesPerFrame = _mh_SamplesPerFrames[mh_lowerSamplingFrequencies][mh_layer];
 
-  register uint8_t _bIndex = ((header[2] >> 2) & 0x03);
-  if(_bIndex == 0x03) return MH_STATE_HEADERCORRUPT;
-
-  // uint8_t _mh_emphasis = header[3] & 0x03;
-	// if(_mh_emphasis == EmphReserved) return MH_STATE_HEADERCORRUPT;
-	if((header[3] & 0x03) == EmphReserved) return MH_STATE_HEADERCORRUPT;
-
-  uint8_t _mh_layer = (3 - ((header[1] >> 1) & 0x03));
-  if(_mh_layer == LayerReserved) return MH_STATE_HEADERCORRUPT;
-
-  headerInstance->mh_version = _mh_version;
-  // if(headerInstance->mh_version == MPEGReserved) return MH_STATE_HEADERCORRUPT;
-  uint8_t _mh_lowerSamplingFrequencies = (_mh_version == MPEG1) ? 0 : 1;
-
-  headerInstance->mh_bitrate = _mh_Bitrates[_mh_lowerSamplingFrequencies][_mh_layer][_bitrateIndex] * 1000; // kbit -> bit
-  if(headerInstance->mh_bitrate == 0) return MH_STATE_FREEBITRATE;
-
-  headerInstance->mh_layer = _mh_layer;
-  headerInstance->_mh_lowerSamplingFrequencies = _mh_lowerSamplingFrequencies;
-  headerInstance->mh_samplesPerSec = _mh_SamplingRates[_mh_version][_bIndex];
-
-  // padding bit, bit 22
-  headerInstance->mh_paddingSize = ((header[2] >> 1) & 0x01);
-
-  headerInstance->mh_samplesPerFrame = _mh_SamplesPerFrames[_mh_lowerSamplingFrequencies][_mh_layer];
-
-  _mheader_hCMP = *(uint32_t *)header; // Update new header compare
-  return MH_STATE_OK;
+	_mheader_hCMP = *(uint32_t *)header;
+	return (uint16_t)(((_mh_Coefficients[mh_lowerSamplingFrequencies][mh_layer] * mh_bitrate / mh_samplesPerSec) + mh_paddingSize) << _mh_SlotSizes[mh_layer]);
 }
 
 // Read in and validate header
@@ -315,7 +298,7 @@ MH_STATE mheader_init(mheader *headerInstance, FIL* file, uint32_t fPos) {
 // Get Total Length
 uint32_t _mheader_getLength(mheader *headerInstance, uint32_t numFrames) {return numFrames * headerInstance->mh_samplesPerFrame / headerInstance->mh_samplesPerSec;};
 
-uint32_t mheader_getLength(FIL* file) {
+/*uint32_t mheader_getLength(FIL* file) {
   uint32_t firstFrameOffset = mheader_getFirstFrameOffset(file);
   uint32_t totalFrameCount = mheader_getTotalFrameCount(file, firstFrameOffset);
 
@@ -323,13 +306,10 @@ uint32_t mheader_getLength(FIL* file) {
   mheader_init(&h, file, firstFrameOffset);
 
   return _mheader_getLength(&h, totalFrameCount);
-}
-
-uint32_t j = 0;
+}*/
 
 // Get frame size
 uint32_t mheader_getFrameSize(mheader *headerInstance){
-  // printf("GetFrameSize called! %u\n", ++j);
 
   return (uint16_t)(\
         (_mh_Coefficients[headerInstance->_mh_lowerSamplingFrequencies][headerInstance->mh_layer] * headerInstance->mh_bitrate / headerInstance->mh_samplesPerSec) \
@@ -338,7 +318,7 @@ uint32_t mheader_getFrameSize(mheader *headerInstance){
 // Get first frame
 uint32_t mheader_getFirstFrameOffset(FIL *file) {
   uint32_t i = 0;
-  uint8_t* idheader = (uint8_t *)malloc(10 * sizeof(uint8_t));
+  uint8_t idheader[10] = {0};
   uint32_t bytesRead = 0;
   // Navigate to file zero
   file_seek_absolute(file, 0);
@@ -354,35 +334,31 @@ uint32_t mheader_getFirstFrameOffset(FIL *file) {
   while(i++)
     if(mheader_init(&h, file, i) == MH_STATE_OK) break;
 
-  free(idheader);
   return i;
 }
 
 uint32_t mheader_getTotalFrameCount(FIL *file, uint32_t fPos) {
-  // Assume valid header pointer
-  mheader h;
+	mheader h;
   if(mheader_init(&h, file, fPos) != MH_STATE_OK) return 0;
   uint32_t cnt = 1, nextHSize = mheader_getFrameSize(&h);
 
-  while(1) {
-    // Here is the old frame size
-    uint32_t _hCMPb = _mheader_hCMP;
-    fPos += nextHSize;
-
-		// Exact same header
+	while(1) {
+		uint32_t _hCMPb = _mheader_hCMP;
+		fPos += nextHSize;
 		uint32_t init = _mheader_initFast(file, fPos);
-		if(init == _hCMPb){	// If new header is the same header, we don't need to set the struct instance
-			++cnt;						// Increase only, done
+		if(init == _hCMPb) {
+			++cnt;
 			continue;
-		} else {						// Otherwise
-			if(_mheader_initCheck(&h, init) == MH_STATE_OK) ++cnt;		// Check if it is a valid header
-			else return cnt;																					// otherwise we're done counting
-			if(_hCMPb != _mheader_hCMP) nextHSize = mheader_getFrameSize(&h);		// Header has different size?
+		} else {
+			int32_t nextFrameSize = mheader_getNextFrame(init);
+			if(nextFrameSize > 0) {
+				nextHSize = nextFrameSize;
+				++cnt;
+			}
+			else return cnt;
 		}
-  }
-  return 0;   // Oops
+	}
 }
-
 
 
 

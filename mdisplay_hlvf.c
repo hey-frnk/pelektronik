@@ -320,8 +320,8 @@ void mdisplay_hlvf_DrawColorIcon(uint8_t x, uint8_t y, uint8_t instance, uint8_t
 
 	if(grayFlag) {
 		// calculate grayscale version of picture. super inefficiently
-		uint16_t _pxlsq = pxl * pxl;
-		uint8_t *tmpIcon = (uint8_t *)malloc(_pxlsq * sizeof(uint8_t));
+		const uint16_t _pxlsq = pxl * pxl;
+		uint8_t tmpIcon[_pxlsq]; // = (uint8_t *)malloc(_pxlsq * sizeof(uint8_t));
 
 		for(uint16_t i = 0; i < _pxlsq; ++i){
 			uint8_t r = 8.2258064516129032258f * (_cptr[i] >> 11);
@@ -339,7 +339,7 @@ void mdisplay_hlvf_DrawColorIcon(uint8_t x, uint8_t y, uint8_t instance, uint8_t
 			for(uint8_t j = 0; j < pxl; ++j)
 				st7735_WritePixel(x + j, y + i, mdisplay_hsl_to565(h * 42.5, s * 255.0, m * (float)(tmpIcon[pxl * i + j]) + n));
 
-		free(tmpIcon);
+		// free(tmpIcon);
 
 	} else
 			for(uint8_t i = 0; i < pxl; ++i)

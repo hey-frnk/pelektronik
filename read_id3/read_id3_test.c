@@ -9,7 +9,7 @@
 
 int main(){
 
-  char* file_name = "01 Here We Are.mp3";
+  char* file_name = "THBD - Lost In The Night (Feat. Pipa Moran).mp3";
 
   FIL* file;
   file = fopen(file_name, "r");

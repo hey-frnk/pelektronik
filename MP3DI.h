@@ -38,6 +38,9 @@ TrackList* MP3DI_initTrackListFromFileList(SD_FILE_LIST *list);
 // Free track list
 void MP3DI_TrackList_free(TrackList *list);
 
+// Free a single track
+void MP3DI_TrackFree(Track *track);
+
 // Retrieve track
 Track* MP3DI_TrackList_retrieveTrack(TrackList *l, uint32_t pos);
 

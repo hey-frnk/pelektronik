@@ -70,6 +70,7 @@ private:
 public:
   hBMPContainer(uint8_t*, uint32_t, uint32_t);    // Write initializer
   hBMPContainer(std::string);                     // Read initializer
+  ~hBMPContainer();
   uint8_t* read();                                // Read compiled data into array
   uint32_t getWidth();
   uint32_t getHeight();

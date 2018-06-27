@@ -9,6 +9,7 @@
 #define rprintf printf
 #endif
 
+#define MH_GETNEXTFRAME_HEADERCORRUPT (-1)
 
 typedef enum {
   MH_STATE_OK = 0,
@@ -73,16 +74,14 @@ MH_STATE mheader_init(mheader *headerInstance, FIL* file, uint32_t fPos);
 uint8_t mheader_isMono(mheader *headerInstance);
 
 // Get total length
-uint32_t mheader_getLength(FIL* file);
 uint32_t _mheader_getLength(mheader *headerInstance, uint32_t numFrames); // Internal
 
 // Get frame size
 uint32_t mheader_getFrameSize(mheader *headerInstance);
 
+uint32_t mheader_getTotalFrameCount(FIL *file, uint32_t fPos);
+
 // Calculate first frame
 uint32_t mheader_getFirstFrameOffset(FIL *file);
-
-// Calculate total frames
-uint32_t mheader_getTotalFrameCount(FIL *file, uint32_t fPos);
 
 #endif

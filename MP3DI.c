@@ -93,7 +93,23 @@ TrackList* __attribute__((weak)) MP3DI_initTrackListFromFileList(SD_FILE_LIST *l
 
 Track* MP3DI_TrackList_retrieveTrack(TrackList *list, uint32_t pos){
   if(pos >= list->size) return NULL;
-  return list->list[pos];
+  // Copy track and unlink
+  Track *retrieve = list->list[pos];
+  Track *current = malloc(sizeof(Track));
+
+  current->fileName = malloc(sizeof(char) * strlen(retrieve->fileName) + 1);
+  current->trackName = malloc(sizeof(char) * strlen(retrieve->trackName) + 1);
+  current->artistName = malloc(sizeof(char) * strlen(retrieve->artistName) + 1);
+  current->albumName = malloc(sizeof(char) * strlen(retrieve->albumName) + 1);
+
+  strcpy(current->fileName, retrieve->fileName);
+  strcpy(current->trackName, retrieve->trackName);
+  strcpy(current->artistName, retrieve->artistName);
+  strcpy(current->albumName, retrieve->albumName);
+
+  current->length = retrieve->length;
+
+  return current;
 }
 
 void MP3DI_retrieveTrackLength(Track *t) {
@@ -131,7 +147,13 @@ void MP3DI_TrackList_free(TrackList *list){
   free(list);
 }
 
-
+void MP3DI_TrackFree(Track *track) {
+  free(track->fileName);
+  free(track->trackName);
+  free(track->albumName);
+  free(track->artistName);
+  free(track);
+}
 
 
 

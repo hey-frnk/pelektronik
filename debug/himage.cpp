@@ -471,3 +471,8 @@ std::string hBMPContainer::renderAndReturnPath(std::string filename){
   }
   return "Oops, something went wrong.";
 }
+
+hBMPContainer::~hBMPContainer() {
+  // delete[] bmpCompiled;
+  // delete[] bmpData;
+}

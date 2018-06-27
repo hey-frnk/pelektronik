@@ -151,6 +151,7 @@ void _routine_BOOT(void){
 
   // Play 1st MP3 file found
   currentTrack = MP3DI_TrackList_retrieveTrack(tl, 0);
+  MP3DI_TrackList_free(tl);
   MP3DI_retrieveTrackLength(currentTrack);
 
   MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
@@ -198,6 +199,8 @@ void _routine_PLAY(void){
   if(btnBack == BUTTON_STATE_LONGPRESS) {
     mp3display_state = MP3DISPLAYSTATE_TRACKLIST;
     free(INSTANCE_TrackDISPLAY);
+    MP3DI_TrackFree(currentTrack);
+    currentTrack = NULL;
     INSTANCE_TrackDISPLAY = NULL;
     INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
     // (*MP3DisplayState_Routine[mp3display_state])();
@@ -276,6 +279,7 @@ void _routine_TRACKLIST(void){
     if(l->FILE_LIST[itemPos]->SD_FILE_TYPE == TYPE_MP3FILE) {
       TrackList *tl = MP3DI_initTrackListFromFileList(l);
       Track *tr = MP3DI_TrackList_retrieveTrack(tl, itemPos);
+      MP3DI_TrackList_free(tl);
       if(tr) {
         currentTrack = tr;
         MP3DI_retrieveTrackLength(currentTrack);
