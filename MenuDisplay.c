@@ -25,13 +25,17 @@
 struct MP3Display_vTable MenuDisplay_vS = {&MenuDisplay_getType, &MenuDisplay_show};
 
 uint8_t MenuDisplay_getType(void *iptr) {
+  #ifdef DEBUG
   printf("MenuDisplay: Type: %hhu\n", ((MenuDisplay *) iptr)->super.type);
+  #endif
   return ((MenuDisplay *) iptr)->super.type;
 }
 
 void MenuDisplay_show(void *iptr) {
   MenuDisplay *tptr = ((MenuDisplay *) iptr);
+  #ifdef DEBUG
   printf("MenuDisplay: Show Method of MenuDisplay Called!\n");
+  #endif
 
   // Draw horizontal menu element lines
   uint32_t _itemPos = tptr->itemPos;
@@ -108,7 +112,9 @@ void MenuDisplay_deInit(MenuDisplay *iptr) {
 }
 
 void MenuDisplay_init(MenuDisplay *iptr) {
+  #ifdef DEBUG
   printf("MenuDisplay initialized\n");
+  #endif
   MP3Display_init(&iptr->super);
   iptr->super.vt = &MenuDisplay_vS;
   iptr->super.type = MDISPLAY_TYPE_MENU;

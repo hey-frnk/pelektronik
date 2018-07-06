@@ -31,7 +31,9 @@ char *_concat(const char *s1, const char *s2){
 }
 
 uint8_t TrackDisplay_getType(void *iptr) {
+  #ifdef DEBUG
   printf("TrackDisplay: Type: %hhu\n", ((TrackDisplay *) iptr)->super.type);
+  #endif
   return ((TrackDisplay *) iptr)->super.type;
 }
 
@@ -99,7 +101,8 @@ void TrackDisplay_show(void *iptr) {
   free(_BUF0); free(_BUF1);
 
   // Progress bar updating
-  uint8_t progress = 140.0 * ((float)PBAR_LENGTH / tptr->length);
+  uint32_t songProgress = TIMEI_getSongProgress();
+  uint8_t progress = ((songProgress <= tptr->length) ? songProgress : 0) * ((float)PBAR_LENGTH / tptr->length);
   mdisplay_hlvf_FillRectangle(10, 80, PBAR_LENGTH, 4, 0xe73c);
   mdisplay_hlvf_FillRectangle(10, 80, progress, 4, COLOR_GRAY);
   // Get minute second representation
@@ -114,12 +117,16 @@ void TrackDisplay_setTrackInfo(TrackDisplay *iptr, char *trackName, char *artist
   iptr->albumName = albumName;
   iptr->length = length;
 
+  #ifdef DEBUG
   printf("TrackDisplay: setTrackInfo called!\n");
+  #endif
 }
 
 void TrackDisplay_changeVolume(TrackDisplay *iptr, uint8_t volume){
   iptr->volume = volume;
+  #ifdef DEBUG
   printf("TrackDisplay: Volume change to: %hhu\n", iptr->volume);
+  #endif
 }
 
 void TrackDisplay_changeMode(TrackDisplay *iptr, uint8_t mode){
@@ -131,16 +138,22 @@ void TrackDisplay_changeMode(TrackDisplay *iptr, uint8_t mode){
     case TRACKDISPLAY_MODE_REPEATALL: mdisplay_hlvf_DrawIcon(115, 1, NAV_REPA, 0xe73c);             break;
     case TRACKDISPLAY_MODE_REPEATONE: mdisplay_hlvf_DrawIcon(115, 1, NAV_REPO, 0xe73c);             break;
   }
+  #ifdef DEBUG
   printf("TrackDisplay: Mode change to: %hhu\n", iptr->mode);
+  #endif
 }
 
 void TrackDisplay_changeStatus(TrackDisplay *iptr, uint8_t status){
   iptr->status = status;
+  #ifdef DEBUG
   printf("TrackDisplay: Status change to: %hhu\n", iptr->status);
+  #endif
 }
 
 void TrackDisplay_init(TrackDisplay *iptr) {
+  #ifdef DEBUG
   printf("TrackDisplay initialized\n");
+  #endif
   MP3Display_init(&iptr->super);
   iptr->super.vt = &TrackDisplay_vS;
   iptr->super.type = MDISPLAY_TYPE_MUSICPLAY;

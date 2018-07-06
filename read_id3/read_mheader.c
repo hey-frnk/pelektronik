@@ -7,8 +7,8 @@
 #include "read_mheader.h"
 
 #ifdef __arm__  // for an embedded enviroment, using FatFs from chan
-#include "../ffs/ff.h"				// FAT File System Library
-#include "../ffs/diskio.h" 			// Disk IO Initialize SPI Mutex
+#include "../Middlewares/Third_Party/FatFs/src/ff.h"				// FAT File System Library
+#include "../Middlewares/Third_Party/FatFs/src/diskio.h" 			// Disk IO Initialize SPI Mutex
 #define file_seek_absolute(file,position) f_lseek(file, position)
 #define file_seek_relative(fi,pos) f_lseek(fi,fi->fptr+pos)
 #define file_read(f,str,l,rea) f_read(f,str,(l),&(rea))

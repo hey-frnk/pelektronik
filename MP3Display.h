@@ -21,6 +21,7 @@ enum MDISPLAY_TYPE {
   MDISPLAY_TYPE_VOICERECORD     = 3
 };
 
+// MP3 Display Class
 typedef struct MP3Display {
   // Methods
   uint8_t     (*getType)                (void *iptr);
@@ -28,6 +29,7 @@ typedef struct MP3Display {
   void        (*init)                   (struct MP3Display *iptr);
   void        (*setBatteryState)        (struct MP3Display *iptr, uint8_t batteryLevel);
   void        (*updateTime)             (struct MP3Display *iptr);
+  void        (*clear)                  (struct MP3Display *iptr);
 
   // Attributes
   struct MP3Display_vTable              *vt;

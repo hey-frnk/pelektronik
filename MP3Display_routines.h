@@ -12,6 +12,9 @@ extern "C" {
 #ifndef MP3DISPLAY_ROUTINES_H
 #define MP3DISPLAY_ROUTINES_H
 
+#include "MP3Display.h"
+#include "TrackDisplay.h"
+
 typedef enum MP3Display_State {
   MP3DISPLAYSTATE_BOOT        = 0, // Boot state: boot information display
   MP3DISPLAYSTATE_PLAY        = 1, // Play state: Display track information with or without EQ

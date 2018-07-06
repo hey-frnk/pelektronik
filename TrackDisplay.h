@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 #include "MP3Display.h"
+#include "RTCI.h"
 
 #ifndef TrackDISPLAY_HPP
 #define TrackDISPLAY_HPP

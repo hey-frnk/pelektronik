@@ -5,7 +5,7 @@ Arduino Pin        | Ext. Header Pin      | STM32L476RG Pin      | Peripheral, P
 
 NRST                 -                      7                      RESET >                 [DISPLAY] Common Reset Line
 
-D4                   PB5                    57                     CARD_CS >               [DISPLAY] SPI Card Chip Select
+-                    PC4                    24                     CARD_CS >               [DISPLAY] SPI Card Chip Select -> Changed from PB5
 
 D8                   PA9                    42                     D/C >                   [DISPLAY] Data/Command Select Line
 
@@ -17,14 +17,49 @@ D12 (MISO)           PA6                    22                     MISO <       
 
 D13 (SCK)            PA5                    21                     SCK >                   [DISPLAY] SPI Clock Line
 
+A3                   PB0                    26                     BRIGHTNESS_PWM >        [DISPLAY] LITE Brightness Control PWM Pin
+
+
 
 A0                   PA0                    14                     PHYS_BUTTON 0 <         [HID] Button 0 Interrupt Input
 
 A1                   PA1                    15                     PHYS_BUTTON 1 <         [HID] Button 1 Interrupt Input 
 
--                    PC2 (35, LEFT)         10                     PHYS_BUTTON 2 <         [HID] Button 2 Interrupt Input
+-                    PC5                    25                     PHYS_BUTTON 2 <         [HID] Button 2 Interrupt Input -> Changed from PC2
 
 A2                   PA4                    20                     PHYS_BUTTON 3 <         [HID] Button 3 Interrupt Input
+
+
+
+A5                   PC0                    8                      MIC_IN <~               [ADC] Microphone Input
+
+
+
+-                    PC12                   53                     TOUCHBTN_0 <            [HID] Touch Button 0 Sensor Input
+
+-                    PC10                   51                     TOUCHBTN_1 <            [HID] Touch Button 1 Sensor Input
+
+-                    PC11                   52                     TOUCHBTN_2 <            [HID] Touch Button 2 Sensor Input
+
+-                    PB7                    59                     TOUCHBTN_3 <            [HID] Touch Button 3 Sensor Input
+
+-                    PA15                   50                     TOUCHREF_1 <            [HID] Touch Button Reference Capaictor 1
+
+D4                   PB5                    57                     TOUCHREF_2 <            [HID] Touch Button Reference Capaictor 2
+
+
+
+-                    PB11                   30                     SPI2_DREQ ?             [DECODER] Pin
+
+D6                   PB10                   29                     SPI2_SCK >              [DECODER] SPI Clock Line
+
+-                    PB2                    28                     SPI2_CS >               [DECODER] SPI MP3 Decoder Chip Select
+
+-                    PB1                    27                     SPI2_DC >               [DECODER] Pin
+
+-                    PC2                    10                     SPI2_MISO <             [DECODER] SPI MP3 Decoder MISO
+
+-                    PC3                    11                     SPI2_MOSI >             [DECODER] SPI MP3 Decoder MOSI
 
 
 

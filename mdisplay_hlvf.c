@@ -18,8 +18,10 @@
 
 #ifndef DEBUG
 	#include "st7735.h"
+	#include "stm32l4xx_hal.h"
 #else
 	// Just for testing
+	#include <stdio.h>
 	#include <stdint.h>
 	#include "debug/himage.h"
 
@@ -70,6 +72,25 @@ static uint16_t const CWHEEL_LOOKUP[256] = {
 	0x78ec, 0x78ec, 0x78eb, 0x78eb, 0x78eb, 0x78ea, 0x78ea, 0x78ea, 0x78ea, 0x78e9, 0x78e9, 0x78e9, 0x78e9, 0x78e8, 0x78e8, 0x78e8,
 	0x78e7, 0x78e7, 0x78e7, 0x78e7, 0x78e6, 0x78e6, 0x78e6, 0x78e6, 0x78e5, 0x78e5, 0x78e5, 0x78e4, 0x78e4, 0x78e4, 0x78e4, 0x78e3
 };
+
+static uint16_t const _BRIGHTNESS_LEVELS[5] = {1, 4, 10, 22, 49};
+
+void mdisplay_hlvf_SetBrightness(uint8_t brightnessLevel) {
+	uint16_t value = _BRIGHTNESS_LEVELS[(brightnessLevel < 5) ? brightnessLevel : 49];
+
+	#ifndef DEBUG
+		TIM_OC_InitTypeDef sConfigOC;
+
+		sConfigOC.OCMode = TIM_OCMODE_PWM1;
+		sConfigOC.Pulse = value;
+		sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+		HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3);
+		HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+	#else
+		printf("Brightness Set to: %hhu, Equals %hu\n", brightnessLevel, value);
+	#endif
+}
 
 void mdisplay_hlvf_FillScreen(uint16_t color){
 	for(uint8_t i = 0; i < _global_height; ++i)
@@ -137,7 +158,7 @@ void mdisplay_hlvf_DrawChar(uint8_t x, uint8_t y, uint8_t chr, uint16_t color, u
 	}
 }
 
-void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, uint8_t fontSize, uint8_t alignment){
+void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, const char *str, uint16_t color, uint8_t fontSize, uint8_t alignment){
 	// cL tells the length of str
 	uint8_t fWidth = 0, fHeight = 0, xspPd = 0;
 	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &xspPd, NULL);
@@ -165,7 +186,7 @@ void mdisplay_hlvf_DrawString(uint8_t x, uint8_t y, char *str, uint16_t color, u
 	}
 }
 
-void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t cStart, uint8_t cEnd, uint8_t s, uint8_t l, uint8_t fontSize, uint8_t alignment){
+void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, const char *str, uint8_t cStart, uint8_t cEnd, uint8_t s, uint8_t l, uint8_t fontSize, uint8_t alignment){
 //void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, float cStart, float cEnd, float s, float l, uint8_t fontSize, uint8_t alignment){
 	// cL tells the length of str, pC is the position counter
 	uint8_t fWidth = 0, fHeight = 0, xspPd = 0;
@@ -197,7 +218,7 @@ void mdisplay_hlvf_DrawColorWheelString(uint8_t x, uint8_t y, char *str, uint8_t
 	}
 }
 
-void mdisplay_hlvf_DrawColorWheelStringFast(uint8_t x, uint8_t y, char *str, uint8_t fontSize, uint8_t alignment){
+void mdisplay_hlvf_DrawColorWheelStringFast(uint8_t x, uint8_t y, const char *str, uint8_t fontSize, uint8_t alignment){
 	// cL tells the length of str, pC is the position counter
 	uint8_t fWidth = 0, fHeight = 0, xspPd = 0;
 	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &xspPd, NULL);
@@ -227,6 +248,31 @@ void mdisplay_hlvf_DrawColorWheelStringFast(uint8_t x, uint8_t y, char *str, uin
 	}
 }
 
+void mdisplay_hlvf_DrawTwoLineString(uint8_t x, uint8_t y, const char *str, uint16_t color, uint8_t fontSize, uint8_t alignment, uint8_t lineCharCount){
+	uint8_t fWidth = 0, fHeight = 0, xspPd = 0;
+	_mdisplay_hlvf_retrieveWidthHeight(fontSize, &fWidth, &fHeight, &xspPd, NULL);
+
+	if(strlen(str) <= 16) {	// No break required. Draw regularly
+		mdisplay_hlvf_DrawString(x, ((y << 1) + fHeight) >> 1, str, color, fontSize, alignment);
+		return; // And we are done
+	}
+
+	// Otherwise. Draw two strings
+	char mLine1[lineCharCount + 1];
+	strncpy(mLine1, str, lineCharCount);
+	mLine1[lineCharCount] = 0;
+	char *_msgLastBreak = strrchr(mLine1, ' ');
+	*(_msgLastBreak) = 0;
+	uint32_t _msgLastBreakDiff = _msgLastBreak - mLine1;
+	char mLine2[lineCharCount + 1];
+	uint8_t _msg2End = strlen(str + _msgLastBreakDiff + 1);
+	strncpy(mLine2, str + _msgLastBreakDiff + 1, _msg2End > lineCharCount ? lineCharCount : _msg2End);
+	mLine2[lineCharCount] = 0;
+
+	mdisplay_hlvf_DrawString(x, y, mLine1, color, fontSize, alignment);
+	mdisplay_hlvf_DrawString(x, y + fHeight, mLine2, color, fontSize, alignment);
+}
+
 static inline void _mdisplay_hlvf_retrieveIcon(uint8_t size, uint8_t *pixels, unsigned char **_cptr){
 	switch(size){
 		case HEART16: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Heart16x16; break;
@@ -246,6 +292,8 @@ static inline void _mdisplay_hlvf_retrieveIcon(uint8_t size, uint8_t *pixels, un
 		case NAV_SETTINGS:*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Settings16x16; break;
 		case NAV_SLEEP: 	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Sleep16x16; break;
 		case NAV_SHDN: 		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)Shutdown16x16; break;
+		case SET_BRIGHT: 	*pixels = 16; if(_cptr) *_cptr = (unsigned char *)SettingsBrightness16x16; break;
+		case SET_TIME:		*pixels = 16; if(_cptr) *_cptr = (unsigned char *)SettingsTime16x16; break;
 	}
 }
 

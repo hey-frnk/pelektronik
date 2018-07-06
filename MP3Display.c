@@ -14,11 +14,13 @@
 
 #include "mdisplay_hlvf.h"
 #include "mdisplay_color.h"
+#include "MP3BI.h"
 #include "font.h"
 #include "RTCI.h"
 
 char tRender[6] = {0};
 
+// MP3 Display
 static uint8_t MP3Display_getType(void *iptr) {
   return ((MP3Display *)iptr)->vt->getType(iptr);
 }
@@ -37,7 +39,9 @@ static void MP3Display_show(void *iptr) {
 
 static void setBatteryState(MP3Display *iptr, uint8_t batteryLevel) {
   iptr->batteryLevel = batteryLevel;
+  #ifdef DEBUG
   printf("Battery Level Set To: %hhu\n", iptr->batteryLevel);
+  #endif
 
   // Battery Display
   mdisplay_hlvf_DrawRectangle(136, 4, 18, 10, COLOR_GRAY);
@@ -73,12 +77,28 @@ static void updateTime(MP3Display *iptr) {
   mdisplay_hlvf_DrawString((_global_width >> 1), 3, tConst, COLOR_GRAY, FONT_8X12, ALIGNMENT_CENTER);
 }
 
+static void MP3Display_clear(MP3Display *iptr) {
+  mdisplay_hlvf_FillScreen(COLOR_WHITE);
+  iptr->show(iptr);
+  iptr->updateTime(iptr);
+  iptr->setBatteryState(iptr, iptr->batteryLevel);
+}
+
 void MP3Display_init(MP3Display *iptr) {
+  #ifdef DEBUG
   printf("MP3Display initialized\n");
+  #endif
 
   iptr->init = MP3Display_init;
   iptr->setBatteryState = setBatteryState;
   iptr->updateTime = updateTime;
   iptr->getType = MP3Display_getType;
   iptr->show = MP3Display_show;
+  iptr->clear = MP3Display_clear;
 }
+
+
+
+
+
+// Hello

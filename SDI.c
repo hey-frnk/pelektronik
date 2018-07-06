@@ -60,8 +60,8 @@ static uint8_t _SDI_retrieveExtension(const char *fileName){
 
 
 #include "stm32_adafruit_sd.h"
-#include "ffs/ff_gen_drv.h"
-#include "ffs/drivers/sd_diskio.h"
+#include "../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h"
+#include "../Middlewares/Third_Party/FatFs/src/drivers/sd_diskio.h"
 
 FATFS SDFatFs;  /* File system object for SD card logical drive */
 FIL MyFile;     /* File object */
@@ -73,6 +73,7 @@ void SDI_Init() {
 		/*##-2- Register the file system object to the FatFs module ##############*/
 		// volatile FRESULT r = f_mount(&SDFatFs, (TCHAR const*)SDPath, 0);
 		volatile FRESULT r = f_mount(&SDFatFs, "", 1);
+
 		if(r != FR_OK); // Error Handler -> !!!!!!!!!!!!!!!!!!!!!!
 
 		/*
