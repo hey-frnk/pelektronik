@@ -1,5 +1,5 @@
-main: maindebug.o MP3Display.o MP3Display_Message.o TrackDisplay.o MP3Display_routines.o MenuDisplay.o mdisplay_color.o mdisplay_hlvf.o himage.o MP3DI.o MP3BI.o SDI.o RTCI.o read_id3.o read_mheader.o
-	clang++ -DDEBUG -o main maindebug.o MP3Display.o MP3Display_Message.o TrackDisplay.o MenuDisplay.o mdisplay_color.o mdisplay_hlvf.o MP3Display_routines.o himage.o MP3DI.o MP3BI.o SDI.o RTCI.o read_id3.o read_mheader.o
+main: maindebug.o MP3Display.o MP3Display_Message.o TrackDisplay.o MP3Display_routines.o MenuDisplay.o mdisplay_color.o mdisplay_hlvf.o himage.o MP3DI.o MP3BI.o SDI.o RTCI.o read_id3.o read_bmp.o read_mheader.o
+	clang++ -DDEBUG -o main maindebug.o MP3Display.o MP3Display_Message.o TrackDisplay.o MenuDisplay.o mdisplay_color.o mdisplay_hlvf.o MP3Display_routines.o himage.o MP3DI.o MP3BI.o SDI.o RTCI.o read_id3.o read_bmp.o read_mheader.o
 
 maindebug.o: maindebug.cpp
 	clang++ -x c++ maindebug.cpp -DDEBUG -std=c++11 -Wall -c
@@ -42,6 +42,9 @@ RTCI.o: RTCI.c
 
 read_id3.o: read_id3/read_id3.c
 	clang -x c read_id3/read_id3.c -DDEBUG -std=c11 -Wall -c
+
+read_bmp.o: read_id3/read_bmp.c
+	clang++ -x c++ read_id3/read_bmp.c -DDEBUG -std=c++11 -Wall -c
 
 read_mheader.o: read_id3/read_mheader.c
 	clang -x c read_id3/read_mheader.c -DDEBUG -std=c11 -Wall -c

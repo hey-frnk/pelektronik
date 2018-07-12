@@ -41,8 +41,11 @@ void MP3DI_TrackList_free(TrackList *list);
 // Free a single track
 void MP3DI_TrackFree(Track *track);
 
+// Retrieve track from file name
+Track* MP3DI_retreiveTrackFromFileName(const char *fileName);
+
 // Retrieve track
-Track* MP3DI_TrackList_retrieveTrack(TrackList *l, uint32_t pos);
+Track* MP3DI_retrieveTrackFromTrackList(TrackList *l, uint32_t pos);
 
 // Retrieve track length
 void MP3DI_retrieveTrackLength(Track *t);

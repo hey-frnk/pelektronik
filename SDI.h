@@ -38,6 +38,9 @@ typedef struct SD_FILE_LIST {
 void 			SDI_Init();
 #endif
 
+// Get file extension
+uint8_t         SDI_retrieveExtension(const char *fileName);
+
 // Allocates new list with all files
 SD_FILE_LIST*   SDI_getFileListFromDirectory(char *dir);
 

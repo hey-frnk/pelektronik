@@ -91,7 +91,62 @@ TrackList* __attribute__((weak)) MP3DI_initTrackListFromFileList(SD_FILE_LIST *l
   return trackList;
 }
 
-Track* MP3DI_TrackList_retrieveTrack(TrackList *list, uint32_t pos){
+Track* MP3DI_retreiveTrackFromFileName(const char *fileName) {
+  if(SDI_retrieveExtension(fileName) != TYPE_MP3FILE) return NULL; // oops, not an MP3
+
+  Track* newTrack = (Track *)malloc(sizeof(Track));
+
+  newTrack->fileName = (char *)calloc(strlen(fileName) + 1, sizeof(char));
+  strcpy(newTrack->fileName, fileName);
+
+  #ifdef DEBUG
+  FIL* file;
+  file = fopen(newTrack->fileName, "r");
+  #else
+  FIL file;
+  volatile FRESULT result = f_open(&file, newTrack->fileName, FA_READ);
+  #endif
+
+  // read title, album and artist
+  char buf0[BUFSIZE];
+  #ifdef DEBUG
+  read_ID3_info(TITLE_ID3, buf0, BUFSIZE, file);
+  #else
+  read_ID3_info(TITLE_ID3, buf0, BUFSIZE, &file);
+  #endif
+  newTrack->trackName = (char *)calloc(strlen(buf0) + 1, sizeof(char));
+  strcpy(newTrack->trackName, buf0);
+
+  char buf1[BUFSIZE];
+  #ifdef DEBUG
+  read_ID3_info(ALBUM_ID3, buf1, BUFSIZE, file);
+  #else
+  read_ID3_info(ALBUM_ID3, buf1, BUFSIZE, &file);
+  #endif
+  newTrack->albumName = (char *)calloc(strlen(buf1) + 1, sizeof(char));
+  strcpy(newTrack->albumName, buf1);
+
+  char buf2[BUFSIZE];
+  #ifdef DEBUG
+  read_ID3_info(ARTIST_ID3, buf2, BUFSIZE, file);
+  #else
+  read_ID3_info(ARTIST_ID3, buf2, BUFSIZE, &file);
+  #endif
+  newTrack->artistName = (char *)calloc(strlen(buf2) + 1, sizeof(char));
+  strcpy(newTrack->artistName, buf2);
+
+  newTrack->length = 0;
+
+  #ifdef DEBUG
+  fclose(file);
+  #else
+  f_close(&file);
+  #endif
+
+  return newTrack;
+}
+
+Track* MP3DI_retrieveTrackFromTrackList(TrackList *list, uint32_t pos) {
   if(pos >= list->size) return NULL;
   // Copy track and unlink
   Track *retrieve = list->list[pos];

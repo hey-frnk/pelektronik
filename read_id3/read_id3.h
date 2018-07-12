@@ -1,16 +1,16 @@
-/* 
+/*
  * ID3 read library
  * Created by Tim O'Brien, t413.com
  * Oct 28, 2010
  *
  * * Releaced under the Creative Commons Attribution-ShareAlike 3.0
- * * You are free 
+ * * You are free
  * *  - to Share, copy, distribute and transmit the work
  * *  - to Remix — to adapt the work
- * * Provided 
+ * * Provided
  * *  - Attribution (my name and website in the comments in your source)
- * *  - Share Alike - If you alter, transform, or build upon this work, 
- * *      you may distribute the resulting work only under 
+ * *  - Share Alike - If you alter, transform, or build upon this work,
+ * *      you may distribute the resulting work only under
  * *      the same or similar license to this one
  *
  * if you are unfamiliar with the terms of this lisence,
@@ -29,22 +29,22 @@
 #define rprintf printf
 #endif
 
-/* 
+/*
  * read_ID3_info - read spesified tag to a string.
- *  example useage: 
+ *  example useage:
  *    FIL file;
  *    f_open(&file, file_name, (FA_READ | FA_OPEN_EXISTING));
  *    char str[40];
  *    read_ID3_info(TITLE_ID3,str,sizeof(str),&file);
  *    printf("Title: %s\n",str);
  *    f_close(&file);
- * 
- *  Input: 
+ *
+ *  Input:
  *   -tag type, use one of the macros below like TITLE_ID3
  *   -char* of an array to read a string to
  *   -the max length to read to
  *   -the file pointer to read from
- *  Output: 
+ *  Output:
  *   1 == success, your data has been read to the array.
  */
 
@@ -57,10 +57,9 @@
 
 unsigned char read_ID3_info	(
 								 const unsigned char tag_name,
-								 char * output_str, 
-								 unsigned int res_str_l, 
+								 char * output_str,
+								 unsigned int res_str_l,
 								 FIL *fp
 							 );
-
 
 #endif /* READ_ID3_H_ */

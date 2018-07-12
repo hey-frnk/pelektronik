@@ -33,6 +33,8 @@ A2                   PA4                    20                     PHYS_BUTTON 3
 
 A5                   PC0                    8                      MIC_IN <~               [ADC] Microphone Input
 
+                     
+
 
 
 -                    PC12                   53                     TOUCHBTN_0 <            [HID] Touch Button 0 Sensor Input

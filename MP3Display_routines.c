@@ -13,6 +13,7 @@
  * - ROUTINE_MAINMENU
  */
 
+#define ever (;;) // ROFL
 
 #include <stdio.h>
 #include <stdint.h>
@@ -28,6 +29,7 @@
 #include "SDI.h"
 #include "MP3DI.h"
 #include "read_id3/read_id3.h"
+#include "read_id3/read_bmp.h"
 #include "MP3BI.h"
 #include "TrackDisplay.h"
 #include "MenuDisplay.h"
@@ -46,13 +48,18 @@
 // Ein Mathematiker und ein Physiker springen vom Dach. Der Mathematiker fliegt nach oben. Warum?
 
 // Active Instance
-MP3Display *INSTANCE_Active = NULL;
+MP3Display        *INSTANCE_Active = NULL;
 
 // Possible allocated instances
-TrackDisplay *INSTANCE_TrackDISPLAY = NULL;
-MenuDisplay *INSTANCE_TrackListDISPLAY = NULL;
-MenuDisplay *INSTANCE_MenuDISPLAY = NULL;
-MenuDisplay *INSTANCE_SettingsDISPLAY = NULL;
+TrackDisplay      *INSTANCE_TrackDISPLAY = NULL;
+MenuDisplay       *INSTANCE_TrackListDISPLAY = NULL;
+MenuDisplay       *INSTANCE_MenuDISPLAY = NULL;
+MenuDisplay       *INSTANCE_SettingsDISPLAY = NULL;
+
+SD_FILE_LIST      *INSTANCE_FILELIST = NULL;
+TrackList         *INSTANCE_TRACKLIST = NULL;
+
+static uint32_t   publicItemPos = 0;
 
 // Current state variable
 MP3Display_State mp3display_state = MP3DISPLAYSTATE_BOOT;
@@ -60,8 +67,8 @@ MP3Display_State mp3display_state = MP3DISPLAYSTATE_BOOT;
 void (* MP3DisplayState_Routine[])(void) = { _routine_BOOT,        // Corresponding routines
                                               _routine_PLAY, _routine_TRACKLIST,
                                               _routine_MAINMENU, _routine_SETTINGS,
-                                              _routine_RECORD, _routine_SLEEP,
-                                              _routine_SHUTDOWN };
+                                              _routine_PICTURE, _routine_RECORD,
+                                              _routine_SLEEP, _routine_SHUTDOWN};
 
 const uint32_t menuElementCount = 6;
 const char *menuElements[6] = {"Now Playing", "Shuffle All", "Record Voice", "Settings", "Backlight Off", "Insane Button"};
@@ -151,16 +158,14 @@ void _routine_BOOT(void){
   #endif
 
   // Get MP3 Directory
-  SD_FILE_LIST *l = SDI_getFileListFromDirectory(NULL);
-  if(l->FILE_LIST_SIZE == 0) {
-
+  INSTANCE_FILELIST = SDI_getFileListFromDirectory(NULL);
+  if(INSTANCE_FILELIST->FILE_LIST_SIZE == 0) {
   }
-  TrackList *tl = MP3DI_initTrackListFromFileList(l);
-  SDI_free(l);
+  INSTANCE_TRACKLIST = MP3DI_initTrackListFromFileList(INSTANCE_FILELIST);
 
   // Play 1st MP3 file found
-  currentTrack = MP3DI_TrackList_retrieveTrack(tl, 0);
-  MP3DI_TrackList_free(tl);
+  currentTrack = MP3DI_retrieveTrackFromTrackList(INSTANCE_TRACKLIST, 0);
+  // MP3DI_TrackList_free(tl);
   mdisplay_hlvf_FillRectangle(0, 68, _global_width, 10, COLOR_WHITE);
   mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, (char*)"In A Technicolour Beat", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
 
@@ -247,30 +252,31 @@ void _routine_PLAY(void){
 
 /* ++++++++++++ @SEARCH: ROUTINE_TRACKLIST ++++++++++++*/
 void _routine_TRACKLIST(void){
-  static SD_FILE_LIST *l = NULL;
   // Check for track list menu instance availability
   if(INSTANCE_TrackListDISPLAY == NULL){
     INSTANCE_TrackListDISPLAY = (MenuDisplay *)malloc(sizeof(MenuDisplay));
     MenuDisplay_init(INSTANCE_TrackListDISPLAY);
     INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
 
+    if(publicItemPos) INSTANCE_TrackListDISPLAY->itemPos = publicItemPos;
+
     // Retrieve current directory
-    l = SDI_getFileListFromDirectory(NULL);
-    uint32_t _l_size = l->FILE_LIST_SIZE;
+    // l = SDI_getFileListFromDirectory(NULL);
+    uint32_t _l_size = INSTANCE_FILELIST->FILE_LIST_SIZE;
     uint8_t *_iconArr = (uint8_t *)malloc(_l_size * sizeof(uint8_t));
     uint16_t *_colorArr = (uint16_t *)malloc(_l_size * sizeof(uint16_t));
     char **_fNameArr = (char **)malloc(_l_size * sizeof(char *));
 
     // Icon array
     for(uint32_t i = 0; i < _l_size; ++i) {
-      switch(l->FILE_LIST[i]->SD_FILE_TYPE) {
+      switch(INSTANCE_FILELIST->FILE_LIST[i]->SD_FILE_TYPE) {
         case TYPE_MP3FILE:    _iconArr[i] = FS_MUSIC;   break;
         case TYPE_BMPIMAGE:   _iconArr[i] = FS_BITMAP;  break;
         case TYPE_DIRECTORY:  _iconArr[i] = FS_DIR;     break;
         default:              _iconArr[i] = FS_UNKNOWN; break;
       }
       _colorArr[i] = COLOR_WHITE;   // We want spacious (wasteful), beautiful icons this time
-      _fNameArr[i] = l->FILE_LIST[i]->SD_FILE_NAME;
+      _fNameArr[i] = INSTANCE_FILELIST->FILE_LIST[i]->SD_FILE_NAME;
     }
 
     INSTANCE_TrackListDISPLAY->updateItems(INSTANCE_TrackListDISPLAY, _fNameArr, _iconArr, _colorArr, _l_size);
@@ -312,13 +318,19 @@ void _routine_TRACKLIST(void){
   // Play selected song
   if(btnMenu == BUTTON_STATE_SHORTPRESS) {
     // List files once again, Get MP3 Directory
-    l = SDI_getFileListFromDirectory(NULL);
+    // INSTANCE_FILELIST = SDI_getFileListFromDirectory(NULL);
     // If valid MP3, set new MP3 file and switch to track playing
     uint32_t itemPos = INSTANCE_TrackListDISPLAY->itemPos;
-    if(l->FILE_LIST[itemPos]->SD_FILE_TYPE == TYPE_MP3FILE) {
-      TrackList *tl = MP3DI_initTrackListFromFileList(l);
-      Track *tr = MP3DI_TrackList_retrieveTrack(tl, itemPos);
-      MP3DI_TrackList_free(tl);
+    publicItemPos = itemPos;
+
+    if(INSTANCE_FILELIST->FILE_LIST[itemPos]->SD_FILE_TYPE == TYPE_MP3FILE) {
+      #ifdef DEBUG
+      printf("MP3 File Detected!\n");
+      #endif
+
+      // TrackList *tl = MP3DI_initTrackListFromFileList(l);
+      Track *tr = MP3DI_retreiveTrackFromFileName(INSTANCE_FILELIST->FILE_LIST[itemPos]->SD_FILE_NAME);
+      // MP3DI_TrackList_free(tl);
       if(tr) {
         currentTrack = tr;
         MP3DI_retrieveTrackLength(currentTrack);
@@ -328,14 +340,30 @@ void _routine_TRACKLIST(void){
         INSTANCE_TrackListDISPLAY = NULL;
         INSTANCE_Active = (MP3Display *)INSTANCE_TrackDISPLAY;
       }
+    } else if(INSTANCE_FILELIST->FILE_LIST[itemPos]->SD_FILE_TYPE == TYPE_BMPIMAGE) {
+      #ifdef DEBUG
+      printf("Bitmap file detected!\n");
+      #endif
+
+      mp3display_state = MP3DISPLAYSTATE_PICTURE;
+      INSTANCE_TrackListDISPLAY->deInit(INSTANCE_TrackListDISPLAY);
+      free(INSTANCE_TrackListDISPLAY);
+      INSTANCE_TrackListDISPLAY = NULL;
+      INSTANCE_Active = NULL;
+
+      readbmp_DrawBitmapFromFile(INSTANCE_FILELIST->FILE_LIST[itemPos]->SD_FILE_NAME);
+    } else {
+      void (*fileTypeErrorMsg[6])(MessagePrompt *, void *) = {MessagePrompt_DrawHandle_DrawMessage, NULL, NULL, NULL, NULL, NULL}; // LOLWUT
+      MsgBox((void *)INSTANCE_TrackListDISPLAY, fileTypeErrorMsg, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"File Type Unsupported", (char *)"OK", NULL, 1);
     }
-    SDI_free(l);
+    // SDI_free(l);
   }
 
   // Back to main menu
   if(btnBack == BUTTON_STATE_SHORTPRESS) {
-    if(l != NULL) SDI_free(l);
+    // if(l != NULL) SDI_free(l);
     mp3display_state = MP3DISPLAYSTATE_MAINMENU;
+    publicItemPos = 0;
     INSTANCE_TrackListDISPLAY->deInit(INSTANCE_TrackListDISPLAY);
     free(INSTANCE_TrackListDISPLAY);
     INSTANCE_TrackListDISPLAY = NULL;
@@ -486,6 +514,54 @@ void _routine_SETTINGS(void){
     free(INSTANCE_SettingsDISPLAY);
     INSTANCE_SettingsDISPLAY = NULL;
     INSTANCE_Active = (MP3Display *)INSTANCE_MenuDISPLAY;
+  }
+}
+
+
+void _routine_PICTURE(void) {
+  #ifdef DEBUG
+    _transposePrintImg(mp3display_state);
+    char c = _readNextState();
+    _MP3BI_ci2cl(c);
+  #endif
+
+  uint8_t btnLeft = 0, btnMenu = 0, btnBack = 0, btnRight = 0;
+  MP3BI_retrieveAllButtonStates(&btnLeft, &btnMenu, &btnBack, &btnRight);
+
+  if(btnLeft == BUTTON_STATE_SHORTPRESS) {
+    // Try finding the previous picture
+    uint32_t _bckPos = publicItemPos;
+    for ever { // #ProgrammerHumor
+      if(_bckPos > 0) --_bckPos;
+      else if(_bckPos == 0) _bckPos = INSTANCE_FILELIST->FILE_LIST_SIZE - 1;
+
+      // Yes, BMP found
+      if(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_TYPE == TYPE_BMPIMAGE) {
+        publicItemPos = _bckPos;
+        readbmp_DrawBitmapFromFile(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_NAME);
+        break;
+      }
+    }
+  }
+
+  if(btnRight == BUTTON_STATE_SHORTPRESS) {
+    // Try finding the next picture
+    uint32_t _bckPos = publicItemPos;
+    for ever {
+      if(_bckPos < INSTANCE_FILELIST->FILE_LIST_SIZE - 1) ++_bckPos;
+      else if(_bckPos == INSTANCE_FILELIST->FILE_LIST_SIZE - 1) _bckPos = 0;
+
+      if(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_TYPE == TYPE_BMPIMAGE) {
+        publicItemPos = _bckPos;
+        readbmp_DrawBitmapFromFile(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_NAME);
+        break;
+      }
+    }
+  }
+
+  if(btnBack == BUTTON_STATE_SHORTPRESS) {
+    mp3display_state = MP3DISPLAYSTATE_TRACKLIST;
+    INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
   }
 }
 

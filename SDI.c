@@ -21,23 +21,26 @@ char *_concatSDI(const char *s1, const char *s2){
 }
 
 #ifdef DEBUG
-  #define SAMPLE_FILES 9
+  #define SAMPLE_FILES 12
 
   const char* tmp[SAMPLE_FILES] = {
     "read_id3/Mark Diamond - Find You.mp3",
     "read_id3/04. Love Alone.mp3",
+    "bitmap/nyc_skyline.bmp",
     "read_id3/22 (feat. Sam Tsui, Kurt Schneider, Against the Current and King the Kid).mp3",
     "read_id3/Rival x Cadmium - Seasons (feat. Harley Bird).mp3",
     "read_id3/DoubleV - Indigo.mp3",
     "read_id3/Autograf – Sleepless In NYC.mp3",
+    "bitmap/roadtrip.bmp",
     "read_id3/The Tech Thieves  - Work On Me ~by KnightVision [soundtake.net].mp3",
     "read_id3/THBD - Lost In The Night (Feat. Pipa Moran).mp3",
-    "read_id3/faded_conor_maynard.mp3"
+    "read_id3/faded_conor_maynard.mp3",
+    "bitmap/mountains.bmp"
   };
 #endif
 
 // Get file ending
-static uint8_t _SDI_retrieveExtension(const char *fileName){
+uint8_t SDI_retrieveExtension(const char *fileName) {
   char *_extension = strrchr(fileName, '.');
   if(!_extension || _extension == fileName) return TYPE_DIRECTORY;
   ++_extension;
@@ -138,7 +141,7 @@ FRESULT scan_files (char* path, SD_FILE_LIST *lInstance) {
             	char *fName = malloc(strlen(fno.fname) * sizeof(char) + 1);
             	strcpy(fName, fno.fname);
 
-            	f1->SD_FILE_TYPE = _SDI_retrieveExtension(fno.fname);
+            	f1->SD_FILE_TYPE = SDI_retrieveExtension(fno.fname);
             	f1->SD_FILE_NAME = fName;
             	f1->SD_FILE_SIZE = fno.fsize;
             	SDI_push(lInstance, f1);
@@ -168,7 +171,7 @@ SD_FILE_LIST* SDI_getFileListFromDirectory(char *dir){
     SD_FILE *file = malloc(sizeof(SD_FILE));
     file->SD_FILE_NAME = (char *)calloc(strlen(tmp[i]) + 1, sizeof(char));
     strcpy(file->SD_FILE_NAME, tmp[i]);
-    file->SD_FILE_TYPE = _SDI_retrieveExtension(file->SD_FILE_NAME);
+    file->SD_FILE_TYPE = SDI_retrieveExtension(file->SD_FILE_NAME);
     file->SD_FILE_SIZE = i * 512;
     SDI_push(newList, file);
   }

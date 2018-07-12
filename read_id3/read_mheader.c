@@ -12,6 +12,10 @@
 #define file_seek_absolute(file,position) f_lseek(file, position)
 #define file_seek_relative(fi,pos) f_lseek(fi,fi->fptr+pos)
 #define file_read(f,str,l,rea) f_read(f,str,(l),&(rea))
+
+#include "../../Inc/mdisplay_hlvf.h"
+#include "../../Inc/stm32l4xx_hal.h"
+
 #else
 //#include <iostream>
 #define file_seek_absolute(file,position) fseek (file , position , SEEK_SET)
@@ -337,6 +341,22 @@ uint32_t mheader_getFirstFrameOffset(FIL *file) {
   return i;
 }
 
+#ifndef DEBUG
+uint16_t pwm_value = 0;
+uint16_t step = 1;
+
+void _mheader_setPWMInternal(uint16_t brightness) {
+	TIM_OC_InitTypeDef sConfigOC;
+
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = brightness;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+}
+#endif
+
 uint32_t mheader_getTotalFrameCount(FIL *file, uint32_t fPos) {
 	mheader h;
   if(mheader_init(&h, file, fPos) != MH_STATE_OK) return 0;
@@ -348,12 +368,27 @@ uint32_t mheader_getTotalFrameCount(FIL *file, uint32_t fPos) {
 		uint32_t init = _mheader_initFast(file, fPos);
 		if(init == _hCMPb) {
 			++cnt;
+
+			#ifndef DEBUG
+			if(pwm_value == 0) step = 1;
+			if(pwm_value == 1568) step = -1;
+			pwm_value += step;
+			if(!(pwm_value & 0x1F)) _mheader_setPWMInternal(pwm_value >> 5);
+			#endif
+
 			continue;
 		} else {
 			int32_t nextFrameSize = mheader_getNextFrame(init);
 			if(nextFrameSize > 0) {
 				nextHSize = nextFrameSize;
 				++cnt;
+
+				#ifndef DEBUG
+				if(pwm_value == 0) step = 1;
+				if(pwm_value == 1568) step = -1;
+				pwm_value += step;
+				if(!(pwm_value & 0x1F)) _mheader_setPWMInternal(pwm_value >> 5);
+				#endif
 			}
 			else return cnt;
 		}
