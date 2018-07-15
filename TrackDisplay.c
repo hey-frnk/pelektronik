@@ -53,7 +53,7 @@ void TrackDisplay_show(void *iptr) {
   if(_blankFlag0){
     // No rotating required
     // mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 45, tptr->trackName, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_CENTER);
-    mdisplay_hlvf_DrawColorWheelStringFast((_global_width >> 1), 45, tptr->trackName, FONT_8X12, ALIGNMENT_CENTER);
+    mdisplay_hlvf_DrawColorWheelStringFast((_global_width >> 1), 40, tptr->trackName, FONT_8X12, ALIGNMENT_CENTER);
   } else {
     // Rotate!
     const uint16_t _TNBUFLENGTH = 19;
@@ -68,15 +68,15 @@ void TrackDisplay_show(void *iptr) {
     strncpy(_TNBUF, tptr->trackName + rPos, (_TNBUFLENGTH - 1));
     _TNBUF[(_TNBUFLENGTH - 1)] = '\0';
 
-    mdisplay_hlvf_FillRectangle(10, 45, _global_width - 20, 12, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(10, 40, _global_width - 20, 12, COLOR_WHITE);
     // mdisplay_hlvf_DrawColorWheelString(10 - dx, 45, _TNBUF, 0, 255, 153, 77, FONT_8X12, ALIGNMENT_LEFT);
-    mdisplay_hlvf_DrawColorWheelStringFast(10 - dx, 45, _TNBUF, FONT_8X12, ALIGNMENT_LEFT);
-    mdisplay_hlvf_FillRectangle(0, 45, 10, 12, COLOR_WHITE);
-    mdisplay_hlvf_FillRectangle(_global_width - 10, 45, 10, 12, COLOR_WHITE);
+    mdisplay_hlvf_DrawColorWheelStringFast(10 - dx, 40, _TNBUF, FONT_8X12, ALIGNMENT_LEFT);
+    mdisplay_hlvf_FillRectangle(0, 40, 10, 12, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(_global_width - 10, 40, 10, 12, COLOR_WHITE);
   }
 
   if(_blankFlag1){ // No rotating, too
-    mdisplay_hlvf_DrawString((_global_width >> 1), 60, _BUF1, COLOR_GRAY, FONT_5X7, ALIGNMENT_CENTER);
+    mdisplay_hlvf_DrawString((_global_width >> 1), 55, _BUF1, COLOR_GRAY, FONT_5X7, ALIGNMENT_CENTER);
   } else {
     // Rotate!
     const uint16_t _AALENGTH = 25;
@@ -91,10 +91,10 @@ void TrackDisplay_show(void *iptr) {
     strncpy(_AABUF, _BUF1 + rPos, (_AALENGTH - 1));
     _AABUF[(_AALENGTH - 1)] = '\0';
 
-	  mdisplay_hlvf_FillRectangle(10, 60, _global_width - 20, 7, COLOR_WHITE);
-    mdisplay_hlvf_DrawString(10 - dx, 60, _AABUF, COLOR_GRAY, FONT_5X7, ALIGNMENT_LEFT);
-    mdisplay_hlvf_FillRectangle(0, 60, 10, 7, COLOR_WHITE);
-    mdisplay_hlvf_FillRectangle(_global_width - 10, 60, 9, 7, COLOR_WHITE);
+	  mdisplay_hlvf_FillRectangle(10, 55, _global_width - 20, 7, COLOR_WHITE);
+    mdisplay_hlvf_DrawString(10 - dx, 55, _AABUF, COLOR_GRAY, FONT_5X7, ALIGNMENT_LEFT);
+    mdisplay_hlvf_FillRectangle(0, 55, 10, 7, COLOR_WHITE);
+    mdisplay_hlvf_FillRectangle(_global_width - 10, 55, 9, 7, COLOR_WHITE);
     // HAL_Delay(100);
   }
 
@@ -103,12 +103,16 @@ void TrackDisplay_show(void *iptr) {
   // Progress bar updating
   uint32_t songProgress = TIMEI_getSongProgress();
   uint8_t progress = ((songProgress <= tptr->length) ? songProgress : 0) * ((float)PBAR_LENGTH / tptr->length);
-  mdisplay_hlvf_FillRectangle(10, 80, PBAR_LENGTH, 4, 0xe73c);
-  mdisplay_hlvf_FillRectangle(10, 80, progress, 4, COLOR_GRAY);
+
+  // Song play end, toggle interrupt state
+  if(progress == PBAR_LENGTH) tptr->changeStatus(tptr, TRACKDISPLAY_STATUS_ENDED);
+
+  mdisplay_hlvf_FillRectangle(10, 75, PBAR_LENGTH, 4, 0xe73c);
+  mdisplay_hlvf_FillRectangle(10, 75, progress, 4, COLOR_GRAY);
   // Get minute second representation
   uint32_t lMinutes = tptr->length / 60, lSeconds = tptr->length % 60;
   char tConst[6] = {lMinutes / 10 + '0', lMinutes % 10 + '0', ':', lSeconds / 10 + '0', lSeconds % 10 + '0', 0};
-  mdisplay_hlvf_DrawString(_global_width - 10, 78, tConst, COLOR_GRAY, FONT_5X7, ALIGNMENT_RIGHT);
+  mdisplay_hlvf_DrawString(_global_width - 10, 72, tConst, COLOR_GRAY, FONT_5X7, ALIGNMENT_RIGHT);
 }
 
 void TrackDisplay_setTrackInfo(TrackDisplay *iptr, char *trackName, char *artistName, char *albumName, uint32_t length){
@@ -145,6 +149,10 @@ void TrackDisplay_changeMode(TrackDisplay *iptr, uint8_t mode){
 
 void TrackDisplay_changeStatus(TrackDisplay *iptr, uint8_t status){
   iptr->status = status;
+
+  if(iptr->status == TRACKDISPLAY_STATUS_PLAYING) mdisplay_hlvf_DrawIcon((_global_width >> 1) - 8, 88, NAV_PAUSE, COLOR_GRAY);
+  else if(iptr->status == TRACKDISPLAY_STATUS_PAUSED) mdisplay_hlvf_DrawIcon((_global_width >> 1) - 8, 88, NAV_PLAY, COLOR_GRAY);
+
   #ifdef DEBUG
   printf("TrackDisplay: Status change to: %hhu\n", iptr->status);
   #endif
@@ -164,4 +172,8 @@ void TrackDisplay_init(TrackDisplay *iptr) {
 
   // Wipe screen
   mdisplay_hlvf_FillScreen(COLOR_WHITE);
+
+  iptr->changeStatus(iptr, TRACKDISPLAY_STATUS_PLAYING);
+  mdisplay_hlvf_DrawIcon((_global_width >> 1) + 26, 88, NAV_FWD, COLOR_GRAY);
+  mdisplay_hlvf_DrawIcon((_global_width >> 1) - 42, 88, NAV_RWD, COLOR_GRAY);
 }

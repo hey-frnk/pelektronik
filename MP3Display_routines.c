@@ -5,20 +5,24 @@
  *      Author: Copyright (C) Frank Zheng
  *
  * TABLE OF CONTENTS. Just type in this to navigate
- * - DEBUG_FUNCTIONS
- * - ROUTINE_BOOT
- * - MSGPROMPTHANDLER
- * - ROUTINE_PLAY
- * - ROUTINE_TRACKLIST
- * - ROUTINE_MAINMENU
+ * - @search DEBUG_FUNCTIONS
+ * - @search ROUTINE_BOOT
+ * - @search MSGPROMPTHANDLER
+ * - @search ROUTINE_PLAY
+ * - @search ROUTINE_TRACKLIST
+ * - @search ROUTINE_MAINMENU
+ * - @search ROUTINE_SETTINGS
+ * - @search ROUTINE_PICTURE
+ * - @search ROUTINE_RECORD
  */
+
+// Ein Mathematiker und ein Physiker springen vom Dach. Der Mathematiker fliegt nach oben. Warum?
 
 #define ever (;;) // ROFL
 
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-
 // This is the place where all headers meet. WOHOO
 #include "MP3Display_routines.h"
 #include "MP3Display_Message.h"
@@ -33,6 +37,7 @@
 #include "MP3BI.h"
 #include "TrackDisplay.h"
 #include "MenuDisplay.h"
+#include "RecordDisplay.h"
 
 #ifdef DEBUG
   #include <iostream>
@@ -45,8 +50,6 @@
   #include "RTCI.h"
 #endif
 
-// Ein Mathematiker und ein Physiker springen vom Dach. Der Mathematiker fliegt nach oben. Warum?
-
 // Active Instance
 MP3Display        *INSTANCE_Active = NULL;
 
@@ -55,9 +58,9 @@ TrackDisplay      *INSTANCE_TrackDISPLAY = NULL;
 MenuDisplay       *INSTANCE_TrackListDISPLAY = NULL;
 MenuDisplay       *INSTANCE_MenuDISPLAY = NULL;
 MenuDisplay       *INSTANCE_SettingsDISPLAY = NULL;
+RecordDisplay     *INSTANCE_RecordDISPLAY = NULL;
 
 SD_FILE_LIST      *INSTANCE_FILELIST = NULL;
-// TrackList         *INSTANCE_TRACKLIST = NULL;
 
 static uint32_t   publicItemPos = 0;
 
@@ -82,7 +85,11 @@ const uint16_t settingsElementColorArray[2] = {COLOR_BLACK, COLOR_BLACK};
 
 Track* currentTrack = NULL;
 
-/* ++++++++++++ @SEARCH: DEBUG_FUNCTIONS ++++++++++++*/
+/**
+  * @brief  Debug functions. Used to render debug
+  * @retval None
+  * @search DEBUG_FUNCTIONS
+  */
 // +++++++++++++ DEBUG ONLY FUNCTIONS +++++++++++++
 #ifdef DEBUG
   using namespace std;
@@ -124,7 +131,11 @@ Track* currentTrack = NULL;
 
 
 
-/* ++++++++++++ @SEARCH: ROUTINE_BOOT ++++++++++++*/
+/**
+  * @brief  Boot routine (no instance)
+  * @retval None
+  * @search ROUTINE_BOOT
+  */
 void _routine_BOOT(void){
   #ifdef DEBUG
   _crObj = new hImage(160, 160, "output.bmp");
@@ -160,12 +171,14 @@ void _routine_BOOT(void){
   // Get MP3 Directory
   INSTANCE_FILELIST = SDI_getFileListFromDirectory(NULL);
   if(INSTANCE_FILELIST->FILE_LIST_SIZE == 0) { // No files
+    MP3Display zeroInstance; // Prevent null pointer clear
+    MP3Display_init(&zeroInstance);
     void (*fileListSizeError[6])(MessagePrompt *, void *) = {MessagePrompt_DrawHandle_DrawMessage, NULL, NULL, NULL, NULL, NULL};
-    MsgBox((void *)INSTANCE_TrackListDISPLAY, fileListSizeError, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"SD Card Read Error!", (char *)"OK", NULL, 1);
+    MsgBox((void *)&zeroInstance, fileListSizeError, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"SD Card Read Error!", (char *)"OK", NULL, 1);
     for ever {
       INSTANCE_FILELIST = SDI_getFileListFromDirectory(NULL);
       if(INSTANCE_FILELIST->FILE_LIST_SIZE > 0) break;
-      else MsgBox((void *)INSTANCE_TrackListDISPLAY, fileListSizeError, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"SD Card Read Error!", (char *)"OK", NULL, 1);
+      else MsgBox((void *)&zeroInstance, fileListSizeError, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"SD Card Read Error!", (char *)"OK", NULL, 1);
     }
   }
 
@@ -198,7 +211,11 @@ void _routine_BOOT(void){
   (*MP3DisplayState_Routine[nextState])();
 }
 
-/* ++++++++++++ @SEARCH: MSGPROMPTHANDLER ++++++++++++*/
+/**
+  * @brief  Test message prompt handlers, used in debug only
+  * @retval None
+  * @search MSGPROMPTHANDLER
+  */
 // Test MsgPrompt Handler
 void TestPromptMenuHandler(MessagePrompt *mptr, void *iptr) {
   printf("Trap @Override Menu called!\n");
@@ -206,17 +223,24 @@ void TestPromptMenuHandler(MessagePrompt *mptr, void *iptr) {
   // tptr->clear(tptr);
 }
 
+#ifdef DEBUG
 void TestPromptInitHandler(MessagePrompt *mptr, void *iptr) {
-  #ifdef DEBUG
-    MessagePrompt_Brightness_DrawUpdate(mptr, iptr);
+
+    // MessagePrompt_Brightness_DrawUpdate(mptr, iptr);
     // MessagePrompt_TimeSet_DrawUpdate(mptr, iptr);
     _transposePrintImg(mp3display_state);
     char c = _readNextState();
     _MP3BI_ci2cl(c);
-  #endif
 }
+#else
+#define TestPromptInitHandler NULL
+#endif
 
-/* ++++++++++++ @SEARCH: ROUTINE_PLAY ++++++++++++*/
+/**
+  * @brief  Song playing routine (track display instance)
+  * @retval None
+  * @search ROUTINE_PLAY
+  */
 void _routine_PLAY(void){
   // Check for Instance availability
   if(INSTANCE_TrackDISPLAY == NULL){
@@ -244,6 +268,10 @@ void _routine_PLAY(void){
     INSTANCE_TrackDISPLAY->super.updateTime((MP3Display *)INSTANCE_TrackDISPLAY);
 
     // Check for state change
+    if(INSTANCE_TrackDISPLAY->status == TRACKDISPLAY_STATUS_ENDED) {
+      INSTANCE_TrackDISPLAY->changeStatus(INSTANCE_TrackDISPLAY, TRACKDISPLAY_STATUS_PAUSED);
+      _MP3BI_setButton(100, BUTTON_RIGHT);
+    }
   }
 
   #ifdef DEBUG
@@ -268,9 +296,9 @@ void _routine_PLAY(void){
         if(tr) {
           MP3DI_TrackFree(currentTrack);
           currentTrack = tr;
-          mdisplay_hlvf_DrawIcon((_global_width >> 1) - 8, 90, NAV_RWD, COLOR_BLACK);
+          mdisplay_hlvf_DrawIcon((_global_width >> 1) - 42, 88, NAV_RWD, COLOR_BLACK);
           MP3DI_retrieveTrackLength(currentTrack);
-          mdisplay_hlvf_ClearIcon((_global_width >> 1) - 8, 90, NAV_RWD);
+          mdisplay_hlvf_DrawIcon((_global_width >> 1) - 42, 88, NAV_RWD, COLOR_GRAY);
           free(INSTANCE_TrackDISPLAY);
           INSTANCE_TrackDISPLAY = NULL;
           TIMEI_stopAndResetTimer();
@@ -292,9 +320,9 @@ void _routine_PLAY(void){
         if(tr) {
           MP3DI_TrackFree(currentTrack);
           currentTrack = tr;
-          mdisplay_hlvf_DrawIcon((_global_width >> 1) - 8, 90, NAV_FWD, COLOR_BLACK); // Draw Skipping
+          mdisplay_hlvf_DrawIcon((_global_width >> 1) + 26, 88, NAV_FWD, COLOR_BLACK); // Draw Skipping
           MP3DI_retrieveTrackLength(currentTrack);
-          mdisplay_hlvf_ClearIcon((_global_width >> 1) - 8, 90, NAV_FWD);
+          mdisplay_hlvf_DrawIcon((_global_width >> 1) + 26, 88, NAV_FWD, COLOR_GRAY);
           free(INSTANCE_TrackDISPLAY);
           INSTANCE_TrackDISPLAY = NULL;
           TIMEI_stopAndResetTimer();
@@ -318,11 +346,22 @@ void _routine_PLAY(void){
 
   // Pause track
   if(btnBack == BUTTON_STATE_SHORTPRESS) {
+    if(INSTANCE_TrackDISPLAY->status == TRACKDISPLAY_STATUS_PLAYING) {
+      TIMEI_stopTimer();
+      INSTANCE_TrackDISPLAY->changeStatus(INSTANCE_TrackDISPLAY, TRACKDISPLAY_STATUS_PAUSED);
+    } else if(INSTANCE_TrackDISPLAY->status == TRACKDISPLAY_STATUS_PAUSED) {
+      TIMEI_startTimer();
+      INSTANCE_TrackDISPLAY->changeStatus(INSTANCE_TrackDISPLAY, TRACKDISPLAY_STATUS_PLAYING);
+    }
 
   }
 }
 
-/* ++++++++++++ @SEARCH: ROUTINE_TRACKLIST ++++++++++++*/
+/**
+  * @brief  File (track) list routine (menu display instance)
+  * @retval None
+  * @search ROUTINE_TRACKLIST
+  */
 void _routine_TRACKLIST(void){
   // Check for track list menu instance availability
   if(INSTANCE_TrackListDISPLAY == NULL){
@@ -444,7 +483,11 @@ void _routine_TRACKLIST(void){
 
 }
 
-/* ++++++++++++ @SEARCH: ROUTINE_MAINMENU ++++++++++++*/
+/**
+  * @brief  Main menu routine (menu display instance)
+  * @retval None
+  * @search ROUTINE_MAINMENU
+  */
 void _routine_MAINMENU(void) {
   // Check for main menu instance availability
   if(INSTANCE_MenuDISPLAY == NULL){
@@ -489,14 +532,18 @@ void _routine_MAINMENU(void) {
   }
 
   if(btnMenu == BUTTON_STATE_SHORTPRESS) {
-    // If selected 0th element (play)
     uint32_t itemPos = INSTANCE_MenuDISPLAY->itemPos;
-    if(itemPos == 0) {
+    if(itemPos == 0) { // File list
       mp3display_state = MP3DISPLAYSTATE_TRACKLIST;
       free(INSTANCE_MenuDISPLAY);
       INSTANCE_MenuDISPLAY = NULL;
       INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
-    } else if(itemPos == 3) {
+    } else if(itemPos == 2) { // Record
+      mp3display_state = MP3DISPLAYSTATE_RECORD;
+      free(INSTANCE_MenuDISPLAY);
+      INSTANCE_MenuDISPLAY = NULL;
+      INSTANCE_Active = (MP3Display *)INSTANCE_RecordDISPLAY;
+    } else if(itemPos == 3) { // Settings
       mp3display_state = MP3DISPLAYSTATE_SETTINGS;
       free(INSTANCE_MenuDISPLAY);
       INSTANCE_MenuDISPLAY = NULL;
@@ -508,6 +555,11 @@ void _routine_MAINMENU(void) {
   }
 }
 
+/**
+  * @brief  Settings menu routine (menu display instance)
+  * @retval None
+  * @search ROUTINE_SETTINGS
+  */
 void _routine_SETTINGS(void){
   // Check for main menu instance availability
   if(INSTANCE_SettingsDISPLAY == NULL){
@@ -589,7 +641,11 @@ void _routine_SETTINGS(void){
   }
 }
 
-
+/**
+  * @brief  Picture display routine (no instance)
+  * @retval None
+  * @search ROUTINE_PICTURE
+  */
 void _routine_PICTURE(void) {
   #ifdef DEBUG
     _transposePrintImg(mp3display_state);
@@ -610,6 +666,7 @@ void _routine_PICTURE(void) {
       // Yes, BMP found
       if(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_TYPE == TYPE_BMPIMAGE) {
         publicItemPos = _bckPos;
+        mdisplay_hlvf_DrawChar(2, 45, '<', COLOR_WHITE, FONT_8X12);
         readbmp_DrawBitmapFromFile(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_NAME);
         break;
       }
@@ -623,6 +680,7 @@ void _routine_PICTURE(void) {
 
       if(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_TYPE == TYPE_BMPIMAGE) {
         publicItemPos = _bckPos;
+        mdisplay_hlvf_DrawChar(150, 45, '>', COLOR_WHITE, FONT_8X12);
         readbmp_DrawBitmapFromFile(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_NAME);
         break;
       }
@@ -633,8 +691,61 @@ void _routine_PICTURE(void) {
   }
 }
 
+/**
+  * @brief  Voice record display routine (no instance)
+  * @retval None
+  * @search ROUTINE_RECORD
+  */
 void _routine_RECORD(void){
-  printf("Hello6\n");
+  if(INSTANCE_RecordDISPLAY == NULL) {
+    INSTANCE_RecordDISPLAY = (RecordDisplay *)malloc(sizeof(RecordDisplay));
+    RecordDisplay_init(INSTANCE_RecordDISPLAY);
+    INSTANCE_Active = (MP3Display *)INSTANCE_RecordDISPLAY;
+  }
+  // Display is active
+  if(INSTANCE_RecordDISPLAY != NULL) {
+    INSTANCE_RecordDISPLAY->super.show(INSTANCE_RecordDISPLAY);
+    INSTANCE_RecordDISPLAY->super.setBatteryState((MP3Display *)INSTANCE_RecordDISPLAY, 2);
+    INSTANCE_RecordDISPLAY->super.updateTime((MP3Display *)INSTANCE_RecordDISPLAY);
+  }
+
+  #ifdef DEBUG
+    _transposePrintImg(mp3display_state);
+    char c = _readNextState();
+    _MP3BI_ci2cl(c);
+  #endif
+
+  uint8_t btnLeft = 0, btnMenu = 0, btnBack = 0, btnRight = 0;
+  MP3BI_retrieveAllButtonStates(&btnLeft, &btnMenu, &btnBack, &btnRight);
+
+  if(btnMenu == BUTTON_STATE_SHORTPRESS) {
+    if(INSTANCE_RecordDISPLAY->recording == 0) INSTANCE_RecordDISPLAY->startRecording(INSTANCE_RecordDISPLAY);
+    else if(INSTANCE_RecordDISPLAY->recording == 1) INSTANCE_RecordDISPLAY->stopRecording(INSTANCE_RecordDISPLAY);
+  }
+
+  if(btnBack == BUTTON_STATE_SHORTPRESS) {
+
+    if(INSTANCE_RecordDISPLAY->recording == 1) { // We are still in recording process.
+      void (*RecordStopPrompt[6])(MessagePrompt *, void *) = {MessagePrompt_DrawHandle_DrawMessage, TestPromptInitHandler, NULL, NULL, NULL, NULL};
+      MESSAGE_PROMPT_RESULT rspres = MsgBox((void *)INSTANCE_RecordDISPLAY, RecordStopPrompt, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"You're recording. Stop Now?", (char *)"Yes", (char *)"No", 2);
+      if(rspres == MESSAGE_PROMPT_RESULT_CANCEL) return; // Don't stop the recording!
+    }
+    if(INSTANCE_RecordDISPLAY->fileName != NULL) { // If a recoding file has been created
+      void (*FileSavePrompt[6])(MessagePrompt *, void *) = {MessagePrompt_DrawHandle_DrawMessage, TestPromptInitHandler, NULL, NULL, NULL, NULL};
+      MESSAGE_PROMPT_RESULT rspres = MsgBox((void *)INSTANCE_RecordDISPLAY, FileSavePrompt, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"Save recording 12-23-18_17-46?", (char *)"Yes", (char *)"No", 2);
+      if(rspres == MESSAGE_PROMPT_RESULT_OK) {
+        // Save File
+      } else if(rspres == MESSAGE_PROMPT_RESULT_CANCEL) {
+        // Do nothing
+      }
+    }
+
+    mp3display_state = MP3DISPLAYSTATE_MAINMENU;
+    RecordDisplay_deInit(INSTANCE_RecordDISPLAY);
+    free(INSTANCE_RecordDISPLAY);
+    INSTANCE_RecordDISPLAY = NULL;
+    INSTANCE_Active = (MP3Display *)INSTANCE_MenuDISPLAY;
+  }
 }
 
 void _routine_SLEEP(void){
@@ -654,12 +765,3 @@ void _routine_SHUTDOWN(void){
 
 // Er hat das Vorzeichen verdreht.
 // Glad you found this. #goVegan!!
-
-
-
-
-
-
-
-
-//

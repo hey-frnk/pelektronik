@@ -54,6 +54,12 @@ void TIMEI_startTimer() {
   #endif
 }
 
+void TIMEI_stopTimer() {
+  #ifndef DEBUG
+  HAL_TIM_Base_Stop_IT(&htim8);
+  #endif
+}
+
 void TIMEI_stopAndResetTimer() {
   #ifndef DEBUG
   HAL_TIM_Base_Stop_IT(&htim8);

@@ -35,6 +35,7 @@ void RTCI_setTime(const mtime *t);
 
 uint32_t TIMEI_getSongProgress();
 void TIMEI_startTimer();
+void TIMEI_stopTimer();
 void TIMEI_stopAndResetTimer();
 
 #endif
