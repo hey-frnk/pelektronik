@@ -47,6 +47,7 @@ void 					mdisplay_hlvf_DrawTwoLineString(uint8_t x, uint8_t y, const char *str,
 // Draw shape
 void          mdisplay_hlvf_DrawIcon(uint8_t x, uint8_t y, uint8_t size, uint16_t color);
 void 					mdisplay_hlvf_DrawColorIcon(uint8_t x, uint8_t y, uint8_t instance, uint8_t grayFlag);
+void 					mdisplay_hlvf_ClearIcon(uint8_t x, uint8_t y, uint8_t instance);
 
 #endif /* MDISPLAY_HLVF_H_ */
 

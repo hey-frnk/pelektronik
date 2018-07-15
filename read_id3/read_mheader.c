@@ -389,8 +389,12 @@ uint32_t mheader_getTotalFrameCount(FIL *file, uint32_t fPos) {
 				pwm_value += step;
 				if(!(pwm_value & 0x1F)) _mheader_setPWMInternal(pwm_value >> 5);
 				#endif
+			} else {
+				#ifndef DEBUG
+				_mheader_setPWMInternal(50);
+				#endif
+				return cnt;
 			}
-			else return cnt;
 		}
 	}
 }

@@ -16,8 +16,8 @@ uint8_t buttonRegister = 0;
 
 void _MP3BI_setButton(uint16_t count, uint8_t button) {
 	uint8_t mask;
-	if(count == 0) mask = BUTTON_STATE_OFF;
-	else if(count < 900) mask = BUTTON_STATE_SHORTPRESS;
+	if(count < 100) mask = BUTTON_STATE_OFF;
+	else if(count < 750 && count >= 100) mask = BUTTON_STATE_SHORTPRESS;
 	else mask = BUTTON_STATE_LONGPRESS;
 
 	buttonRegister |= (mask << (button << 1));

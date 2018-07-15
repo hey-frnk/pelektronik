@@ -2,8 +2,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include "read_bmp.h"
+
+#ifdef DEBUG
 #include "../mdisplay_color.h"
 #include "../mdisplay_hlvf.h"
+#else
+#include "../Inc/mdisplay_color.h"
+#include "../Inc/mdisplay_hlvf.h"
+#include "../Inc/st7735.h"
+#endif
 
 #ifdef __arm__  // for an embedded enviroment, using FatFs from chan
   #include "../Middlewares/Third_Party/FatFs/src/ff.h"				// FAT File System Library
@@ -47,20 +54,24 @@ void readbmp_DrawBitmapFromFile(const char *fileName) {
   file_seek_absolute(&file, offset);
   #endif
 
-  for(uint8_t y = 0; y < height; y++) {
-      for(uint8_t x = 0; x < width; x++) {
-        uint8_t bgrTmp[3];
+  for(uint8_t y = 0; y < height; ++y) {
 
-        #ifdef DEBUG
-        file_read(file, &bgrTmp, 3, bytesread);
-        uint16_t color = mdisplay_rgb_to565(bgrTmp[2], bgrTmp[1], bgrTmp[0]);
-        mdisplay_hlvf_DrawRectangle(x, height - y - 1, 1, 1, color);
-        #else
-        file_read(&file, &bgrTmp, 3, bytesread);
-        uint16_t color = mdisplay_rgb_to565(bgrTmp[2], bgrTmp[1], bgrTmp[0]);
-        st7735_WritePixel(x, width - y - 1, color);
-        #endif
-      }
+    for(uint8_t x = 0; x < width; x += 2) {
+      uint8_t bgrTmp[6];
+      #ifdef DEBUG
+      file_read(file, &bgrTmp, 6, bytesread);
+      uint16_t color1 = mdisplay_rgb_to565(bgrTmp[2], bgrTmp[1], bgrTmp[0]);
+      uint16_t color2 = mdisplay_rgb_to565(bgrTmp[5], bgrTmp[4], bgrTmp[3]);
+      mdisplay_hlvf_DrawRectangle(x, height - y - 1, 1, 1, color1);
+      mdisplay_hlvf_DrawRectangle(x + 1, height - y - 1, 1, 1, color2);
+      #else
+      file_read(&file, &bgrTmp, 6, bytesread);
+      uint16_t color1 = mdisplay_rgb_to565(bgrTmp[2], bgrTmp[1], bgrTmp[0]);
+      uint16_t color2 = mdisplay_rgb_to565(bgrTmp[5], bgrTmp[4], bgrTmp[3]);
+      st7735_WritePixel(x, height - y - 1, color1);
+      st7735_WritePixel(x + 1, height - y - 1, color2);
+      #endif
+    }
   }
 
   #ifdef DEBUG

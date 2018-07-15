@@ -24,7 +24,7 @@ char *_concatSDI(const char *s1, const char *s2){
   #define SAMPLE_FILES 12
 
   const char* tmp[SAMPLE_FILES] = {
-    "read_id3/Mark Diamond - Find You.mp3",
+    "bitmap/mountains.bmp",
     "read_id3/04. Love Alone.mp3",
     "bitmap/nyc_skyline.bmp",
     "read_id3/22 (feat. Sam Tsui, Kurt Schneider, Against the Current and King the Kid).mp3",
@@ -35,7 +35,7 @@ char *_concatSDI(const char *s1, const char *s2){
     "read_id3/The Tech Thieves  - Work On Me ~by KnightVision [soundtake.net].mp3",
     "read_id3/THBD - Lost In The Night (Feat. Pipa Moran).mp3",
     "read_id3/faded_conor_maynard.mp3",
-    "bitmap/mountains.bmp"
+    "read_id3/Mark Diamond - Find You.mp3"
   };
 #endif
 

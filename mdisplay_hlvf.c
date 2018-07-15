@@ -73,10 +73,10 @@ static uint16_t const CWHEEL_LOOKUP[256] = {
 	0x78e7, 0x78e7, 0x78e7, 0x78e7, 0x78e6, 0x78e6, 0x78e6, 0x78e6, 0x78e5, 0x78e5, 0x78e5, 0x78e4, 0x78e4, 0x78e4, 0x78e4, 0x78e3
 };
 
-static uint16_t const _BRIGHTNESS_LEVELS[5] = {1, 4, 10, 22, 49};
+static uint16_t const _BRIGHTNESS_LEVELS[5] = {1, 4, 10, 22, 50};
 
 void mdisplay_hlvf_SetBrightness(uint8_t brightnessLevel) {
-	uint16_t value = _BRIGHTNESS_LEVELS[(brightnessLevel < 5) ? brightnessLevel : 49];
+	uint16_t value = _BRIGHTNESS_LEVELS[(brightnessLevel < 5) ? brightnessLevel : 50];
 
 	#ifndef DEBUG
 		TIM_OC_InitTypeDef sConfigOC;
@@ -394,6 +394,14 @@ void mdisplay_hlvf_DrawColorIcon(uint8_t x, uint8_t y, uint8_t instance, uint8_t
 				for(uint8_t j = 0; j < pxl; ++j)
 					st7735_WritePixel(x + j, y + i, _cptr[pxl * i + j]);
 
+}
+
+void mdisplay_hlvf_ClearIcon(uint8_t x, uint8_t y, uint8_t instance) {
+	uint8_t pxl = 24;
+	unsigned char *_cptr;
+	_mdisplay_hlvf_retrieveIcon(instance, &pxl, &_cptr);
+
+	mdisplay_hlvf_FillRectangle(x, y, pxl, pxl, COLOR_WHITE);
 }
 
 

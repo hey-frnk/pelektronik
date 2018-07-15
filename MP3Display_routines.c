@@ -57,7 +57,7 @@ MenuDisplay       *INSTANCE_MenuDISPLAY = NULL;
 MenuDisplay       *INSTANCE_SettingsDISPLAY = NULL;
 
 SD_FILE_LIST      *INSTANCE_FILELIST = NULL;
-TrackList         *INSTANCE_TRACKLIST = NULL;
+// TrackList         *INSTANCE_TRACKLIST = NULL;
 
 static uint32_t   publicItemPos = 0;
 
@@ -159,13 +159,35 @@ void _routine_BOOT(void){
 
   // Get MP3 Directory
   INSTANCE_FILELIST = SDI_getFileListFromDirectory(NULL);
-  if(INSTANCE_FILELIST->FILE_LIST_SIZE == 0) {
+  if(INSTANCE_FILELIST->FILE_LIST_SIZE == 0) { // No files
+    void (*fileListSizeError[6])(MessagePrompt *, void *) = {MessagePrompt_DrawHandle_DrawMessage, NULL, NULL, NULL, NULL, NULL};
+    MsgBox((void *)INSTANCE_TrackListDISPLAY, fileListSizeError, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"SD Card Read Error!", (char *)"OK", NULL, 1);
+    for ever {
+      INSTANCE_FILELIST = SDI_getFileListFromDirectory(NULL);
+      if(INSTANCE_FILELIST->FILE_LIST_SIZE > 0) break;
+      else MsgBox((void *)INSTANCE_TrackListDISPLAY, fileListSizeError, MESSAGE_PROMPT_LEFTFOCUSED, (char *)"SD Card Read Error!", (char *)"OK", NULL, 1);
+    }
   }
-  INSTANCE_TRACKLIST = MP3DI_initTrackListFromFileList(INSTANCE_FILELIST);
 
-  // Play 1st MP3 file found
-  currentTrack = MP3DI_retrieveTrackFromTrackList(INSTANCE_TRACKLIST, 0);
-  // MP3DI_TrackList_free(tl);
+  if(INSTANCE_FILELIST->FILE_LIST[0]->SD_FILE_TYPE == TYPE_MP3FILE) { // First file is MP3? Great.
+    publicItemPos = 0;
+    currentTrack = MP3DI_retreiveTrackFromFileName(INSTANCE_FILELIST->FILE_LIST[0]->SD_FILE_NAME);
+  } else { // Try finding the first mp3
+    uint32_t _bckPos = publicItemPos;
+    for ever {
+      if(_bckPos < INSTANCE_FILELIST->FILE_LIST_SIZE - 1) ++_bckPos;
+      else if(_bckPos == INSTANCE_FILELIST->FILE_LIST_SIZE - 1) _bckPos = 0;
+
+      // Yes, mp3 found
+      if(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_TYPE == TYPE_MP3FILE) {
+        publicItemPos = _bckPos;
+        Track *tr = MP3DI_retreiveTrackFromFileName(INSTANCE_FILELIST->FILE_LIST[publicItemPos]->SD_FILE_NAME);
+        if(tr) currentTrack = tr;
+        break;
+      }
+    }
+  }
+
   mdisplay_hlvf_FillRectangle(0, 68, _global_width, 10, COLOR_WHITE);
   mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, (char*)"In A Technicolour Beat", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
 
@@ -233,8 +255,53 @@ void _routine_PLAY(void){
   uint8_t btnLeft = 0, btnMenu = 0, btnBack = 0, btnRight = 0;
   MP3BI_retrieveAllButtonStates(&btnLeft, &btnMenu, &btnBack, &btnRight);
 
+  // Skip left or rewind
+  if(btnLeft == BUTTON_STATE_SHORTPRESS) {
+    uint32_t _bckPos = publicItemPos;
+    for ever { // #ProgrammerHumor
+      if(_bckPos > 0) --_bckPos;
+      else if(_bckPos == 0) _bckPos = INSTANCE_FILELIST->FILE_LIST_SIZE - 1;
+      // Yes, mp3 found
+      if(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_TYPE == TYPE_MP3FILE) {
+        publicItemPos = _bckPos;
+        Track *tr = MP3DI_retreiveTrackFromFileName(INSTANCE_FILELIST->FILE_LIST[publicItemPos]->SD_FILE_NAME);
+        if(tr) {
+          MP3DI_TrackFree(currentTrack);
+          currentTrack = tr;
+          mdisplay_hlvf_DrawIcon((_global_width >> 1) - 8, 90, NAV_RWD, COLOR_BLACK);
+          MP3DI_retrieveTrackLength(currentTrack);
+          mdisplay_hlvf_ClearIcon((_global_width >> 1) - 8, 90, NAV_RWD);
+          free(INSTANCE_TrackDISPLAY);
+          INSTANCE_TrackDISPLAY = NULL;
+          TIMEI_stopAndResetTimer();
+        }
+        break;
+      }
+    }
+  }
+
+  // Skip this song
   if(btnRight == BUTTON_STATE_SHORTPRESS) {
-    //
+    uint32_t _bckPos = publicItemPos;
+    for ever {
+      if(_bckPos < INSTANCE_FILELIST->FILE_LIST_SIZE - 1) ++_bckPos;
+      else if(_bckPos == INSTANCE_FILELIST->FILE_LIST_SIZE - 1) _bckPos = 0;
+      if(INSTANCE_FILELIST->FILE_LIST[_bckPos]->SD_FILE_TYPE == TYPE_MP3FILE) {
+        publicItemPos = _bckPos;
+        Track *tr = MP3DI_retreiveTrackFromFileName(INSTANCE_FILELIST->FILE_LIST[publicItemPos]->SD_FILE_NAME);
+        if(tr) {
+          MP3DI_TrackFree(currentTrack);
+          currentTrack = tr;
+          mdisplay_hlvf_DrawIcon((_global_width >> 1) - 8, 90, NAV_FWD, COLOR_BLACK); // Draw Skipping
+          MP3DI_retrieveTrackLength(currentTrack);
+          mdisplay_hlvf_ClearIcon((_global_width >> 1) - 8, 90, NAV_FWD);
+          free(INSTANCE_TrackDISPLAY);
+          INSTANCE_TrackDISPLAY = NULL;
+          TIMEI_stopAndResetTimer();
+        }
+        break;
+      }
+    }
   }
 
   // Back to file list. Prepare FSM change
@@ -247,6 +314,11 @@ void _routine_PLAY(void){
     INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
     TIMEI_stopAndResetTimer();
     // (*MP3DisplayState_Routine[mp3display_state])();
+  }
+
+  // Pause track
+  if(btnBack == BUTTON_STATE_SHORTPRESS) {
+
   }
 }
 
@@ -542,9 +614,7 @@ void _routine_PICTURE(void) {
         break;
       }
     }
-  }
-
-  if(btnRight == BUTTON_STATE_SHORTPRESS) {
+  } else if(btnRight == BUTTON_STATE_SHORTPRESS) {
     // Try finding the next picture
     uint32_t _bckPos = publicItemPos;
     for ever {
@@ -557,9 +627,7 @@ void _routine_PICTURE(void) {
         break;
       }
     }
-  }
-
-  if(btnBack == BUTTON_STATE_SHORTPRESS) {
+  } else if(btnBack == BUTTON_STATE_SHORTPRESS) {
     mp3display_state = MP3DISPLAYSTATE_TRACKLIST;
     INSTANCE_Active = (MP3Display *)INSTANCE_TrackListDISPLAY;
   }
