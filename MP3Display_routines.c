@@ -203,12 +203,12 @@ void _routine_BOOT(void){
 
   mdisplay_hlvf_FillRectangle(0, 68, _global_width, 10, COLOR_WHITE);
   mdisplay_hlvf_DrawColorWheelString((_global_width >> 1), 68, (char*)"In A Technicolour Beat", 200, 255, 255, 127, FONT_5X7, ALIGNMENT_CENTER);
+  #ifdef DEBUG
+    _transposePrintImg(mp3display_state);
+  #endif
 
   MP3DI_retrieveTrackLength(currentTrack);
-
-  MP3Display_State nextState = MP3DISPLAYSTATE_PLAY;
-  mp3display_state = nextState;
-  (*MP3DisplayState_Routine[nextState])();
+  mp3display_state = MP3DISPLAYSTATE_PLAY;
 }
 
 /**

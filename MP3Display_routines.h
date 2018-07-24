@@ -12,9 +12,6 @@ extern "C" {
 #ifndef MP3DISPLAY_ROUTINES_H
 #define MP3DISPLAY_ROUTINES_H
 
-#include "MP3Display.h"
-#include "TrackDisplay.h"
-
 typedef enum MP3Display_State {
   MP3DISPLAYSTATE_BOOT        = 0, // Boot state: boot information display
   MP3DISPLAYSTATE_PLAY        = 1, // Play state: Display track information with or without EQ
@@ -36,12 +33,6 @@ void _routine_PICTURE(void);
 void _routine_RECORD(void);
 void _routine_SLEEP(void);
 void _routine_SHUTDOWN(void);
-
-// Active Instance
-extern MP3Display* INSTANCE_Active;
-
-// Possible allocated instances
-extern TrackDisplay* INSTANCE_TrackDISPLAY;
 
 // Current state variable
 extern MP3Display_State mp3display_state;
